@@ -112,6 +112,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="DPTable.h" />
+    <ClInclude Include="IndexArray.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="DPTable.cpp" />
+    <ClCompile Include="IndexArray.cpp" />
+    <ClCompile Include="mainTester.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
