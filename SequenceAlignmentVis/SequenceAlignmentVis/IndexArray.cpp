@@ -6,13 +6,13 @@
 
 using namespace std;
 
-IndexArray::IndexArray(unsigned int dimensions,int* maxArr) :dimensions(dimensions) {
+IndexArray::IndexArray(vector<int> maxArr) :dimensions(maxArr.size()),overflow(false){
 	arr = new int[dimensions];
-	for (unsigned int i = 0; i < dimensions; i++) { arr[i] = 0; }
+	for (int i = 0; i < dimensions; ++i) { arr[i] = 0; }
 	copyMaxArr(maxArr);
 }
 
-IndexArray::IndexArray(const IndexArray& other) : dimensions(other.dimensions) {
+IndexArray::IndexArray(const IndexArray& other) : dimensions(other.dimensions),overflow(other.overflow){
 	copyIndices(other);
 	copyMaxArr(other.maxArr);
 }
@@ -23,6 +23,7 @@ IndexArray& IndexArray::operator=(const IndexArray& other) {
 	}else {
 		freeArr();
 		dimensions = other.dimensions;
+		overflow = other.overflow;
 		copyIndices(other);
 		copyMaxArr(other.maxArr);
 		return *this;
@@ -33,6 +34,10 @@ IndexArray::~IndexArray() {
 	freeArr();
 }
 
+int IndexArray::getMax(int dim) const{
+	return maxArr[dim];
+}
+
 IndexArray& IndexArray::operator++() {
 	int i = dimensions - 1;
 	while (i >= 0 && arr[i] == maxArr[i] - 1) {
@@ -40,6 +45,8 @@ IndexArray& IndexArray::operator++() {
 	}
 	if (i >= 0) {
 		arr[i]++;
+	}else{
+		overflow = true;
 	}
 	return *this;
 }
@@ -48,10 +55,6 @@ IndexArray IndexArray::operator++(int) {
 	IndexArray ans(*this);
 	++(*this);
 	return ans;
-}
-
-int IndexArray::operator[](unsigned int ind) {
-	return arr[ind];
 }
 
 bool operator==(const IndexArray& first,const IndexArray& second) {
@@ -74,6 +77,10 @@ bool operator<=(const IndexArray& first, const IndexArray& second) {
 	return cmp(first, second) <= 0;
 }
 
+bool operator!=(const IndexArray& first, const IndexArray& second) {
+	return cmp(first, second) != 0;
+}
+
 void IndexArray::freeArr() {
 	delete[](arr);
 	delete[](maxArr);
@@ -83,6 +90,13 @@ void IndexArray::copyIndices(const IndexArray& other) {
 	arr = new int[dimensions];
 	for (unsigned int i = 0; i < dimensions; i++) {
 		arr[i] = other.arr[i];
+	}
+}
+
+void IndexArray::copyMaxArr(vector<int> maxArr) {
+	this->maxArr = new int[dimensions];
+	for (unsigned int i = 0; i < dimensions; i++) {
+		this->maxArr[i] = maxArr[i];
 	}
 }
 
