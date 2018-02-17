@@ -111,10 +111,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Aligner.h" />
     <ClInclude Include="DPTable.h" />
     <ClInclude Include="IndexArray.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Aligner.cpp" />
     <ClCompile Include="DPTable.cpp" />
     <ClCompile Include="IndexArray.cpp" />
     <ClCompile Include="mainTester.cpp" />

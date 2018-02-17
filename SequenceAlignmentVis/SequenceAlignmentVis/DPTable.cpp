@@ -7,11 +7,15 @@
 
 using namespace std;
 
-DPTable::DPTable(vector<int> dimensions):dimensions(dimensions),dim(dimensions.size()),size(getSize()){
-	data = new float[size];
+DPTable::DPTable() :dimensions(), dim(0), size(0) {
+	data = nullptr;
 }
 
-DPTable::DPTable(const DPTable& other):dim(other.dim),size(other.size){
+DPTable::DPTable(vector<int> dimensions):dimensions(dimensions),dim(dimensions.size()),size(getSize()){
+	setupData(size);
+}
+
+DPTable::DPTable(const DPTable& other):dimensions(other.dimensions),dim(other.dim),size(other.size){
 	copyData(other);
 }
 
@@ -21,6 +25,7 @@ DPTable& DPTable::operator=(const DPTable& other) {
 	}else {
 		freeData();
 		dim = other.dim;
+		dimensions = other.dimensions;
 		size = other.size;
 		copyData(other);
 		return *this;
@@ -32,7 +37,10 @@ DPTable::~DPTable() {
 }
 
 void DPTable::freeData() {
-	delete[] data;
+	if (data != nullptr) {
+		delete[] data;
+		data = nullptr;
+	}
 }
 
 IndexArray DPTable::getMaxArr() {
@@ -59,6 +67,13 @@ float& DPTable::operator[](IndexArray& index) {
 void DPTable::printTable(){
 	for (IndexArray ind(dimensions); !ind.getOverflow(); ++ind) {
 		cout << "DP" << ind << " = " << (*this)[ind] << endl;
+	}
+}
+
+void DPTable::setupData(int size) {
+	data = new float[size];
+	for (int i = 0; i < size; ++i) {
+		data[i] = 0;
 	}
 }
 

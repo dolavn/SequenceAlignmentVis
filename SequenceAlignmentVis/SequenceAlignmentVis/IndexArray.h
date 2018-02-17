@@ -11,6 +11,7 @@
 
 class IndexArray {
 public:
+	IndexArray();
 	IndexArray(std::vector<int> maxArr);
 	IndexArray(const IndexArray& other);
 	IndexArray& operator=(const IndexArray& other);
@@ -20,30 +21,44 @@ public:
 	/*Operators overloading*/
 	IndexArray& operator++(); //prefix ++
 	IndexArray operator++(int); //postfix ++
+	IndexArray& operator+=(const IndexArray& other);
+	IndexArray& operator-=(const IndexArray& other);
 
 	inline int& operator[](int ind) {return arr[ind];}
-	inline int getDimensions() { return dimensions; }
-	inline bool getOverflow() { return overflow; }
+	inline int get(int ind) const{ return arr[ind]; }
+	inline int getDimensions() const { return dimensions; }
+	inline bool getOverflow() const { return overflow; }
+	inline bool getUnderflow() const { return underflow; }
 
-	friend bool operator==(const IndexArray& first,const IndexArray& second);
-	friend bool operator<(const IndexArray& first, const IndexArray& second);
-	friend bool operator>(const IndexArray& first, const IndexArray& second);
-	friend bool operator<=(const IndexArray& first, const IndexArray& second);
-	friend bool operator>=(const IndexArray& first, const IndexArray& second);
-	friend bool operator!=(const IndexArray& first, const IndexArray& second);
+	std::vector<IndexArray>* getNextIndices(int inc);
+
+
+	inline friend bool operator==(const IndexArray& first,const IndexArray& second);
+	inline friend bool operator<(const IndexArray& first, const IndexArray& second);
+	inline friend bool operator>(const IndexArray& first, const IndexArray& second);
+	inline friend bool operator<=(const IndexArray& first, const IndexArray& second);
+	inline friend bool operator>=(const IndexArray& first, const IndexArray& second);
+	inline friend bool operator!=(const IndexArray& first, const IndexArray& second);
+	inline friend IndexArray operator+(const IndexArray& first, const IndexArray& second) {
+		IndexArray ans = first;
+		ans += second;
+		return ans;
+	}
+	inline friend IndexArray operator-(const IndexArray& first, const IndexArray& second) {
+		IndexArray ans = first;
+		ans -= second;
+		return ans;
+	}
 private:
 	unsigned int dimensions;
-	int* arr;
-	int* maxArr;
+	std::vector<int> arr;
+	std::vector<int> maxArr;
 	bool overflow;
-
-	void freeArr();
-	void copyIndices(const IndexArray& index);
-	void copyMaxArr(std::vector<int> maxArr);
-	void copyMaxArr(int* arr);
+	bool underflow;
 	
 	friend std::ostream& operator<<(std::ostream& stream, const IndexArray& arr);
 
+	friend static bool sameDimensions(const IndexArray& first, const IndexArray& second);
 	friend static int cmp(const IndexArray& first, const IndexArray& second);
 };
 

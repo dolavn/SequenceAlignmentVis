@@ -6,32 +6,29 @@
 
 using namespace std;
 
-IndexArray::IndexArray(vector<int> maxArr) :dimensions(maxArr.size()),overflow(false){
-	arr = new int[dimensions];
-	for (int i = 0; i < dimensions; ++i) { arr[i] = 0; }
-	copyMaxArr(maxArr);
+IndexArray::IndexArray() :arr(), maxArr(), dimensions(0), overflow(false), underflow(false) {
+
+}
+IndexArray::IndexArray(vector<int> maxArr) :arr(maxArr.size()),maxArr(maxArr),dimensions(maxArr.size()),overflow(false),underflow(false){
 }
 
-IndexArray::IndexArray(const IndexArray& other) : dimensions(other.dimensions),overflow(other.overflow){
-	copyIndices(other);
-	copyMaxArr(other.maxArr);
+IndexArray::IndexArray(const IndexArray& other) : dimensions(other.dimensions),arr(other.arr),maxArr(other.maxArr),overflow(other.overflow),underflow(other.underflow){
 }
 
 IndexArray& IndexArray::operator=(const IndexArray& other) {
 	if (this == &other) {
 		return *this;
 	}else {
-		freeArr();
 		dimensions = other.dimensions;
 		overflow = other.overflow;
-		copyIndices(other);
-		copyMaxArr(other.maxArr);
+		underflow = other.underflow;
+		arr = other.arr;
+		maxArr = other.maxArr;
 		return *this;
 	}
 }
 
 IndexArray::~IndexArray() {
-	freeArr();
 }
 
 int IndexArray::getMax(int dim) const{
@@ -54,6 +51,74 @@ IndexArray& IndexArray::operator++() {
 IndexArray IndexArray::operator++(int) {
 	IndexArray ans(*this);
 	++(*this);
+	return ans;
+}
+
+IndexArray& IndexArray::operator+=(const IndexArray& other) {
+	if (!sameDimensions(*this, other)) {
+		throw invalid_argument("Both operands must be of the same dimensions.");
+	}
+	int remainder = 0;
+	int i = dimensions - 1;
+	while (i >= 0) {
+		int toAdd=other.get(i)+remainder;
+		if (arr[i] + toAdd >= maxArr[i]) {
+			remainder = 1;
+			if (i == 0) {
+				overflow = true;
+			}
+		}
+		else {
+			remainder = 0;
+		}
+		arr[i] = (arr[i] + toAdd) % (maxArr[i]);
+		i--;
+	}
+	return *this;
+}
+
+IndexArray& IndexArray::operator-=(const IndexArray& other) {
+	if (!sameDimensions(*this, other)) {
+		throw invalid_argument("Both operands must be of the same dimensions.");
+	}
+	int remainder = 0;
+	int i = dimensions - 1;
+	while (i >= 0) {
+		int toSub = other.get(i) + remainder;
+		if (arr[i] - toSub <0) {
+			remainder = 1;
+			if (i == 0) {
+				underflow = true;
+			}
+		}
+		else {
+			remainder = 0;
+		}
+		arr[i] = (maxArr[i] + arr[i] - toSub) % (maxArr[i]);
+		i--;
+	}
+	return *this;
+}
+
+vector<IndexArray>* IndexArray::getNextIndices(int inc) {
+	vector<int> dim(dimensions, 2);
+	vector<IndexArray>* ans = new vector<IndexArray>();
+	IndexArray ind(dim);
+	ind++;
+	for (; !ind.getOverflow(); ++ind) { //O(2^k) - Not good for non-small inputs!
+		bool isValid = true;
+		IndexArray currInd(*this);
+		for (unsigned int i = 0; i < dimensions && isValid; ++i) {
+			int afterInc = currInd[i] + ind[i] * inc;
+			if (afterInc >= maxArr[i] || afterInc < 0) {
+				isValid = false;
+			}
+			else {
+				currInd[i] = afterInc;
+			}
+		}
+		if (isValid) { ans->push_back(currInd); }
+	}
 	return ans;
 }
 
@@ -81,30 +146,12 @@ bool operator!=(const IndexArray& first, const IndexArray& second) {
 	return cmp(first, second) != 0;
 }
 
-void IndexArray::freeArr() {
-	delete[](arr);
-	delete[](maxArr);
-}
-
-void IndexArray::copyIndices(const IndexArray& other) {
-	arr = new int[dimensions];
-	for (unsigned int i = 0; i < dimensions; i++) {
-		arr[i] = other.arr[i];
+bool sameDimensions(const IndexArray& first, const IndexArray& second) {
+	if (first.dimensions != second.dimensions) { return false; }
+	for (unsigned int i = 0; i < first.dimensions; ++i) {
+		if (first.getMax(i) != second.getMax(i)) { return false; }
 	}
-}
-
-void IndexArray::copyMaxArr(vector<int> maxArr) {
-	this->maxArr = new int[dimensions];
-	for (unsigned int i = 0; i < dimensions; i++) {
-		this->maxArr[i] = maxArr[i];
-	}
-}
-
-void IndexArray::copyMaxArr(int* maxArr) {
-	this->maxArr = new int[dimensions];
-	for (unsigned int i = 0; i < dimensions; i++) {
-		this->maxArr[i] = maxArr[i];
-	}
+	return true;
 }
 
 int cmp(const IndexArray& first, const IndexArray& second) {

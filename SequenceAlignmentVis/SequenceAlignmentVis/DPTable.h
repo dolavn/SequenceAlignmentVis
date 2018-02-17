@@ -11,6 +11,7 @@
 
 class DPTable {
 public:
+	DPTable();
 	DPTable(std::vector<int> dimensions);
 	DPTable(const DPTable& other);
 	DPTable& operator=(const DPTable& other);
@@ -28,6 +29,7 @@ private:
 	unsigned int dim;
 	unsigned int size;
 
+	void setupData(int size);
 	void freeData();
 	void copyData(const DPTable& other);
 	int getSize();
