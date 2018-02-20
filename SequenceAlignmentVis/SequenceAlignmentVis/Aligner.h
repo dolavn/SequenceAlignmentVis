@@ -100,7 +100,7 @@ private:
 	}
 	void clearMatrix() {
 		if (matrix != nullptr) {
-			for (int i = 0; i < (int)alphabet.size(); ++i) {
+			for (int i = 0; i < (int)alphabet.size()+1; ++i) {
 				if (matrix[i] != nullptr) {
 					delete[] matrix[i];
 					matrix[i] = nullptr;
@@ -122,6 +122,7 @@ public:
 	Aligner(std::vector<char> alphabet,float match, float replace, float insert);
 	Aligner(const Aligner& other);
 	Aligner& operator=(const Aligner& other);
+	~Aligner();
 
 	inline int getStringsNum() const { return strings.size(); }
 	inline std::string getString(int i) const;
@@ -132,19 +133,23 @@ public:
 	void resetStrings();
 	void align();
 	void alignStrings(std::vector<std::string> strings);
+	std::vector<std::string> getAlignment() { return alignment; }
 
 	inline float testCalcScore(const IndexArray& ind, const IndexArray& stringsInd) { return calcScore(ind, stringsInd); }
-	float testGlobalAlignment() { globalAlignment(); return table[table.getMaxArr()]; }
+	float testGlobalAlignment() { globalAlignment(); return (*table)[table->getMaxArr()]; }
 private:
+	void clearTable();
 	void globalAlignment();
+	void restoreAlignment();
 	std::vector<IndexArray>* getStringIndicesVec(const IndexArray& ind, const std::vector<IndexArray>& lastIndices);
 	float calcScore(const IndexArray& ind,const IndexArray& stringsInd);
+	int stringLengthsSum();
 
 	std::vector<std::string> strings;
 	std::vector<std::string> alignment;
 	std::vector<char> alphabet;
 	distanceMatrix matrix;
-	DPTable table;
+	DPTable* table;
 };
 
 

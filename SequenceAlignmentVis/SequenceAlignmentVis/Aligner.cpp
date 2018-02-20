@@ -4,10 +4,9 @@
 /****************************************/
 #include <limits>
 #include "Aligner.h"
-
 using namespace std;
 
-Aligner::Aligner(vector<char> alphabet, distanceMatrix mat) :strings(), alphabet(alphabet), matrix(mat), table() {
+Aligner::Aligner(vector<char> alphabet, distanceMatrix mat) :strings(), alphabet(alphabet), matrix(mat), table(nullptr) {
 	if (!testAlphabet(alphabet)) {
 		throw invalid_argument("Invalid alphabet");
 	}
@@ -22,7 +21,7 @@ Aligner::Aligner(vector<char> alphabet, float match, float replace, float insert
 	}
 }
 
-Aligner::Aligner(const Aligner& other) :strings(other.strings), alphabet(other.alphabet), matrix(other.matrix), table(other.table) {
+Aligner::Aligner(const Aligner& other) :strings(other.strings), alphabet(other.alphabet), matrix(other.matrix), table(other.table == nullptr ? nullptr : other.table->clone()) {
 
 }
 
@@ -31,12 +30,17 @@ Aligner& Aligner::operator=(const Aligner& other) {
 		return *this;
 	}
 	else {
+		clearTable();
 		strings = other.strings;
 		alphabet = other.alphabet;
 		matrix = other.matrix;
-		table = other.table;
+		table = other.table==nullptr?nullptr:other.table->clone();
 	}
 	return *this;
+}
+
+Aligner::~Aligner() {
+	clearTable();
 }
 
 distanceMatrix createMatrix(vector<char> alphabet, float match, float replace, float insert) {
@@ -89,11 +93,15 @@ string Aligner::getString(int i) const {
 }
 
 void Aligner::align() {
-	/*TO IMPLEMENT*/
+	globalAlignment();
+	restoreAlignment();
 }
 
 void Aligner::alignStrings(vector<string> strings) {
-	/*TO IMPLEMENT*/
+	resetStrings();
+	addStrings(strings);
+	globalAlignment();
+	restoreAlignment();
 }
 
 void Aligner::globalAlignment() {
@@ -101,23 +109,60 @@ void Aligner::globalAlignment() {
 	for (unsigned int i = 0; i < dimensions.size(); ++i) {
 		dimensions[i] = strings[i].size()+1;
 	}
-	table = DPTable(dimensions);
+	clearTable();
+	table = new FullDPTable(dimensions);
+	FullDPTable& tableRef = static_cast<FullDPTable&>(*table);
 	IndexArray ind(dimensions);
-	table[ind++] = 0.0f;
+	tableRef[ind++] = 0.0f;
 	for (; !ind.getOverflow(); ++ind) {
 		vector<IndexArray>* indicesPtr = ind.getNextIndices(-1);
 		vector<IndexArray>& indicesVec = *indicesPtr;
 		vector<IndexArray>* stringIndicesVecPtr = getStringIndicesVec(ind,indicesVec);
 		vector<IndexArray>& stringIndicesVec = *stringIndicesVecPtr;
 		float max = -1 * numeric_limits<float>::infinity();
+		IndexArray greenArrow;
 		for (unsigned int i = 0; i < stringIndicesVec.size(); ++i) {
 			float score = calcScore(ind,stringIndicesVec[i]);
-			score = score + table[indicesVec[i]];
-			if (score > max) max = score;
+			score = score + tableRef[indicesVec[i]];
+			if (score > max) {
+				max = score;
+				greenArrow = indicesVec[i];
+			}
 		}
-		table[ind] = max;
+		tableRef[ind] = max;
+		tableRef.getGreenArrow(ind) = greenArrow;
 		delete(indicesPtr);
 		delete(stringIndicesVecPtr);
+	}
+}
+
+void Aligner::restoreAlignment() {
+	DPTable& tableRef = *table;
+	vector<char*> currAlignment(strings.size());
+	vector<char*> origPtrs(strings.size());
+	int stringsLengthsSum = stringLengthsSum();
+	for (unsigned int i = 0; i < strings.size(); ++i) {
+		currAlignment[i] = (char*)malloc(sizeof(char)*stringsLengthsSum);
+		origPtrs[i] = currAlignment[i];
+		currAlignment[i] = currAlignment[i] + stringsLengthsSum-1;;
+		*currAlignment[i] = 0;
+		currAlignment[i] = currAlignment[i] - 1;
+	}
+	IndexArray curr = tableRef.getMaxArr();
+	IndexArray zero = curr;
+	zero.resetIndex();
+	while (curr != zero) {
+		IndexArray next = tableRef.getGreenArrow(curr);
+		IndexArray diff = curr - next;
+		for (int i = 0; i < diff.getDimensions(); ++i) {
+			*(currAlignment[i]--) = diff[i] == 0 ? '_':strings[i][curr[i]-1];
+		}
+		curr = next;
+	}
+	alignment = vector<string>(strings.size());
+	for (unsigned int i = 0; i < alignment.size(); ++i) {
+		alignment[i] = string(currAlignment[i] + 1);
+		free(origPtrs[i]);
 	}
 }
 
@@ -162,6 +207,21 @@ float Aligner::calcScore(const IndexArray& ind,const IndexArray& stringsInd) {
 		}
 	}
 	return score;
+}
+
+void Aligner::clearTable() {
+	if (table != nullptr) {
+		delete(table);
+		table = nullptr;
+	}
+}
+
+int Aligner::stringLengthsSum() {
+	int sum = 0;
+	for (unsigned int i = 0; i < strings.size(); ++i) {
+		sum = sum + strings[i].size();
+	}
+	return sum;
 }
 
 bool testAlphabet(vector<char> alphabet) {

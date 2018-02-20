@@ -1,3 +1,10 @@
+#ifdef _DEBUG
+#define _CRTDBG_MAP_ALLOC
+#include <stdlib.h>
+#include <crtdbg.h>
+#define DEBUG_NEW new(_NORMAL_BLOCK, __FILE__, __LINE__)
+#define new DEBUG_NEW
+#endif
 /****************************************/
 /* IndexArray.h                         */
 /* Copyright (c) Dolav Nitay            */
@@ -9,10 +16,14 @@
 #include <vector>
 #include <iostream>
 
+/*
+A class to hold a vector of indices, which used
+to iterate over a multi-dimensional table.
+*/
 class IndexArray {
 public:
-	IndexArray();
-	IndexArray(std::vector<int> maxArr);
+	IndexArray(); //Default constructor, constructs empty index array.
+	IndexArray(std::vector<int> maxArr); 
 	IndexArray(const IndexArray& other);
 	IndexArray& operator=(const IndexArray& other);
 	~IndexArray();
@@ -31,14 +42,14 @@ public:
 	inline bool getUnderflow() const { return underflow; }
 
 	std::vector<IndexArray>* getNextIndices(int inc);
+	void resetIndex();
 
-
-	inline friend bool operator==(const IndexArray& first,const IndexArray& second);
-	inline friend bool operator<(const IndexArray& first, const IndexArray& second);
-	inline friend bool operator>(const IndexArray& first, const IndexArray& second);
-	inline friend bool operator<=(const IndexArray& first, const IndexArray& second);
-	inline friend bool operator>=(const IndexArray& first, const IndexArray& second);
-	inline friend bool operator!=(const IndexArray& first, const IndexArray& second);
+	inline friend bool operator==(const IndexArray& first, const IndexArray& second) { return cmp(first, second) == 0; }
+	inline friend bool operator<(const IndexArray& first, const IndexArray& second) { return cmp(first, second) < 0; }
+	inline friend bool operator>(const IndexArray& first, const IndexArray& second) { return cmp(first, second) > 0; }
+	inline friend bool operator<=(const IndexArray& first, const IndexArray& second) { return cmp(first, second) <= 0; }
+	inline friend bool operator>=(const IndexArray& first, const IndexArray& second) { return cmp(first, second) >= 0; }
+	inline friend bool operator!=(const IndexArray& first, const IndexArray& second) { return cmp(first, second) != 0; }
 	inline friend IndexArray operator+(const IndexArray& first, const IndexArray& second) {
 		IndexArray ans = first;
 		ans += second;
@@ -62,4 +73,17 @@ private:
 	friend static int cmp(const IndexArray& first, const IndexArray& second);
 };
 
+int cmp(const IndexArray& first, const IndexArray& second) {
+	if (first.dimensions > second.dimensions) { return 1; }
+	if (first.dimensions < second.dimensions) { return -1; }
+	for (unsigned int i = 0; i < first.dimensions; i++) {
+		if (first.arr[i] > second.arr[i]) {
+			return 1;
+		}
+		if (first.arr[i] < second.arr[i]) {
+			return -1;
+		}
+	}
+	return 0;
+}
 #endif

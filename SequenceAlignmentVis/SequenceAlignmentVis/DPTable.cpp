@@ -7,43 +7,61 @@
 
 using namespace std;
 
-DPTable::DPTable() :dimensions(), dim(0), size(0) {
-	data = nullptr;
+DPTable::DPTable(vector<int> dimensions):dim(dimensions.size()),dimensions(dimensions){
 }
 
-DPTable::DPTable(vector<int> dimensions):dimensions(dimensions),dim(dimensions.size()),size(getSize()){
-	setupData(size);
-}
-
-DPTable::DPTable(const DPTable& other):dimensions(other.dimensions),dim(other.dim),size(other.size){
-	copyData(other);
+DPTable::DPTable(const DPTable& other) : dim(other.dim), dimensions(other.dimensions) {
 }
 
 DPTable& DPTable::operator=(const DPTable& other) {
 	if (this == &other) {
 		return *this;
 	}else {
-		freeData();
 		dim = other.dim;
 		dimensions = other.dimensions;
+		return *this;
+	}
+}
+
+DPTable::~DPTable() {
+}
+
+FullDPTable::FullDPTable(vector<int> dimensions):DPTable(dimensions),size(getSize()){
+	setupData(size);
+}
+
+FullDPTable::FullDPTable(const FullDPTable& other):DPTable(other),size(other.size){
+	copyData(other);
+}
+
+FullDPTable& FullDPTable::operator=(const FullDPTable& other) {
+	if (this == &other) {
+		return *this;
+	}else {
+		DPTable::operator=(other);
+		freeData();
 		size = other.size;
 		copyData(other);
 		return *this;
 	}
 }
 
-DPTable::~DPTable() {
+FullDPTable::~FullDPTable() {
 	freeData();
 }
 
-void DPTable::freeData() {
+void FullDPTable::freeData() {
 	if (data != nullptr) {
 		delete[] data;
 		data = nullptr;
 	}
+	if (greenArrows != nullptr) {
+		delete[] greenArrows;
+		greenArrows = nullptr;
+	}
 }
 
-IndexArray DPTable::getMaxArr() {
+IndexArray FullDPTable::getMaxArr() const{
 	IndexArray ans(dimensions);
 	for (int i = 0; i < (int)dim; i++) {
 		ans[i] = dimensions[i]-1;
@@ -51,40 +69,50 @@ IndexArray DPTable::getMaxArr() {
 	return ans;
 }
 
-float& DPTable::operator[](IndexArray& index) {
+float& FullDPTable::operator[](const IndexArray& index) {
 	if (!validIndex(index)) {
 		throw invalid_argument("Invalid index");
 	}
-	int ind = 0;
-	int currFactor = 1;
-	for (int i = dim - 1; i >= 0; i--) {
-		ind = ind + currFactor*index[i];
-		currFactor = currFactor*index.getMax(i);
-	}
+	int ind = convertIndex(index);
 	return data[ind];
 }
 
-void DPTable::printTable(){
+IndexArray& FullDPTable::getGreenArrow(const IndexArray& index) {
+	if (!validIndex(index)) {
+		throw invalid_argument("Invalid index");
+	}
+	int ind = convertIndex(index);
+	return greenArrows[ind];
+}
+
+void FullDPTable::printTable(){
 	for (IndexArray ind(dimensions); !ind.getOverflow(); ++ind) {
 		cout << "DP" << ind << " = " << (*this)[ind] << endl;
 	}
 }
 
-void DPTable::setupData(int size) {
+DPTable* FullDPTable::clone() {
+	return new FullDPTable(*this);
+}
+
+void FullDPTable::setupData(int size) {
 	data = new float[size];
+	greenArrows = new IndexArray[size];
 	for (int i = 0; i < size; ++i) {
 		data[i] = 0;
 	}
 }
 
-void DPTable::copyData(const DPTable& other) {
+void FullDPTable::copyData(const FullDPTable& other) {
 	data = new float[size];
+	greenArrows = new IndexArray[size];
 	for (unsigned int i = 0; i < size; i++) {
 		data[i] = other.data[i];
+		greenArrows[i] = other.greenArrows[i];
 	}
 }
 
-int DPTable::getSize() {
+int FullDPTable::getSize() {
 	int ans = 1;
 	for (unsigned int i = 0; i < dimensions.size(); i++) {
 		ans = ans * dimensions[i];
@@ -92,12 +120,22 @@ int DPTable::getSize() {
 	return ans;
 }
 
-bool DPTable::validIndex(IndexArray& index) {
-	if (index.getDimensions() != dimensions.size()) {
+int FullDPTable::convertIndex(const IndexArray& index) {
+	int ind = 0;
+	int currFactor = 1;
+	for (int i = dim - 1; i >= 0; i--) {
+		ind = ind + currFactor*index.get(i);
+		currFactor = currFactor*index.getMax(i);
+	}
+	return ind;
+}
+
+bool DPTable::validIndex(const IndexArray& index) {
+	if (index.getDimensions() != dim) {
 		return false;
 	}
 	for (int i = 0; i < index.getDimensions(); ++i) {
-		if (index[i] >= dimensions[i]) {
+		if (index.get(i) >= dimensions[i]) {
 			return false;
 		}
 	}

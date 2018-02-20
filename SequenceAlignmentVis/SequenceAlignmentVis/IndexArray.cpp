@@ -100,6 +100,14 @@ IndexArray& IndexArray::operator-=(const IndexArray& other) {
 	return *this;
 }
 
+void IndexArray::resetIndex() {
+	for (unsigned int i = 0; i < dimensions; ++i) {
+		(*this)[i] = 0;
+	}
+	overflow = false;
+	underflow = false;
+}
+
 vector<IndexArray>* IndexArray::getNextIndices(int inc) {
 	vector<int> dim(dimensions, 2);
 	vector<IndexArray>* ans = new vector<IndexArray>();
@@ -122,50 +130,12 @@ vector<IndexArray>* IndexArray::getNextIndices(int inc) {
 	return ans;
 }
 
-bool operator==(const IndexArray& first,const IndexArray& second) {
-	return cmp(first, second) == 0;
-}
-
-bool operator>(const IndexArray& first, const IndexArray& second) {
-	return cmp(first, second) > 0;
-}
-
-bool operator<(const IndexArray& first, const IndexArray& second) {
-	return cmp(first, second) < 0;
-}
-
-bool operator>=(const IndexArray& first, const IndexArray& second) {
-	return cmp(first, second) >= 0;
-}
-
-bool operator<=(const IndexArray& first, const IndexArray& second) {
-	return cmp(first, second) <= 0;
-}
-
-bool operator!=(const IndexArray& first, const IndexArray& second) {
-	return cmp(first, second) != 0;
-}
-
 bool sameDimensions(const IndexArray& first, const IndexArray& second) {
 	if (first.dimensions != second.dimensions) { return false; }
 	for (unsigned int i = 0; i < first.dimensions; ++i) {
 		if (first.getMax(i) != second.getMax(i)) { return false; }
 	}
 	return true;
-}
-
-int cmp(const IndexArray& first, const IndexArray& second) {
-	if (first.dimensions > second.dimensions) { return 1; }
-	if (first.dimensions < second.dimensions) { return -1; }
-	for (unsigned int i = 0; i < first.dimensions; i++) {
-		if (first.arr[i] > second.arr[i]) {
-			return 1;
-		}
-		if (first.arr[i] < second.arr[i]) {
-			return -1;
-		}
-	}
-	return 0;
 }
 
 ostream& operator<<(ostream& stream, const IndexArray& arr) {
