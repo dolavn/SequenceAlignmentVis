@@ -32,6 +32,7 @@ Shader::Shader(const std::string& fileName)
 	m_uniforms[2] = glGetUniformLocation(m_program, "lightDirection");
 	m_uniforms[3] = glGetUniformLocation(m_program, "lightColor");
 	m_uniforms[4] = glGetUniformLocation(m_program, "drawColor");
+	m_uniforms[5] = glGetUniformLocation(m_program, "objId");
 }
 
 Shader::~Shader()
@@ -56,10 +57,12 @@ void Shader::Update(glm::mat4 MVP, glm::mat4 Normal)
 	glUniformMatrix4fv(m_uniforms[1], 1, GL_FALSE, &Normal[0][0]);
 	glUniform3f(m_uniforms[2], 0.0f, 0.0f, 1.0f);
 	glUniform3f(m_uniforms[3], 1.0f, 1.0f, 1.0f);
+	glUniform3f(m_uniforms[4], 0.0f, 0.0f, 0.0f);
 }
 
-void Shader::setColor(glm::vec3 color) {
+void Shader::setColor(glm::vec3 color,glm::vec3 id) {
 	glUniform3f(m_uniforms[4], color.x, color.y, color.z);
+	glUniform3f(m_uniforms[5], id.x, id.y, id.z);
 }
 
 std::string Shader::LoadShader(const std::string& fileName)

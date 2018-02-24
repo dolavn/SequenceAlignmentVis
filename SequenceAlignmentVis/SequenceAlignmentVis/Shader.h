@@ -8,16 +8,15 @@ class Shader
 {
 public:
 	Shader(const std::string& fileName);
-
 	void Bind();
 	void Update(glm::mat4 MVP, glm::mat4 Normal);
-	void setColor(glm::vec3 color);
+	void setColor(glm::vec3 color,glm::vec3 id);
 
 	virtual ~Shader();
 protected:
 private:
 	static const unsigned int NUM_SHADERS = 2;
-	static const unsigned int NUM_UNIFORMS = 5;
+	static const unsigned int NUM_UNIFORMS = 6;
 	void operator=(const Shader& shader) {}
 	Shader(const Shader& shader) {}
 

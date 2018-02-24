@@ -13,10 +13,6 @@ uniform sampler2D tex;
 
 void main()
 {
-	vec3 color=drawColor;
-	if(drawColor==vec3(0,0,0)){
-		color = texture(tex,texCoord0).xyz;
-	}
-	vec3 tmp = dot(-lightDirection, normal0) *color ;
-	gl_FragColor =  clamp(vec4(tmp,1.0), 0.0, 1.0);
+	vec3 color=vec3(objId.r,objId.g,objId.b);
+	gl_FragColor =  clamp(vec4(color,1.0), 0.0, 1.0);
 }

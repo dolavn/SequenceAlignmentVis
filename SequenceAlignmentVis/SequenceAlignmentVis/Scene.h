@@ -3,39 +3,106 @@
 #include "Shader.h"
 #include "Display.h"
 #include "Mesh.h"
-#include "Cube.h"
+#include "Object.h"
+#include "Text.h"
 #include <string>
 #include <vector>
+#include <mutex>
+#include <shared_mutex>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/transform.hpp>
 
+class Engine;
+
 class Scene {
 public:
-	Scene(Display& display,std::string shaderPath,std::string pickingShaderPath);
-	~Scene();
+	Scene(Display& display);
+	Scene(const Scene& other);
+	virtual ~Scene();
 
-	void setCameraLocation(glm::vec3 cameraLocation) { this->cameraLocation = cameraLocation; }
-	void setCameraDirection(glm::vec3 cameraForward, glm::vec3 cameraUp) { this->cameraForward = cameraForward; this->cameraUp = cameraUp; }
+	virtual void rotateCamera(float dx, float dy,glm::vec3 location) = 0;
+	virtual Scene* clone() = 0;
+	void setShaders(Shader* shader, Shader* pickingShader, Shader* textShader) {
+		this->shader = shader; this->pickingShader = pickingShader; this->textShader = textShader;
+	}
 	void drawScene();
-	int addObject(Cube c) { objects.push_back(c); return objects.size() - 1; }
-	Cube& getObject(int ind) { return objects[ind]; }
+	void drawScenePicking();
+	void onClickBackground();
+	int addObject(DrawableObject* o);
+	DrawableObject& getObject(int ind);
+	void removeDrawable(int ind);
+	DrawableObject* getSelectedObj() { return selectedObj; }
+	void setSelectedObj(DrawableObject* obj) { this->selectedObj = obj; }
 	Mesh* getCubeMesh() { return cubeMesh; }
+	Mesh* getArrowMesh() { return arrowMesh; }
 
-private:
+	Shader& getShader() { return *shader; }
+	Shader& getTextShader() { return *textShader; }
+protected:
+	mutable std::mutex mtx;
 	Mesh* createCubeMesh();
+	Mesh* createArrowMesh();
+	DrawableObject* selectedObj = nullptr;
 	void setupProjectionMatrix();
 	void clear();
 	Display& display;
-	Shader shader;
-	Shader pickingShader;
+	Shader* shader;
+	Shader* pickingShader;
+	Shader* textShader;
 	Mesh* cubeMesh;
-	std::vector<Cube> objects;
+	Mesh* arrowMesh;
+
+	std::vector<DrawableObject*> objects;
+	std::vector<DrawableObject*> textObjects;
+
+	std::vector<int> freeIndicesObjects;
+	std::vector<int> freeIndicesTextObjects;
 
 	glm::vec3 cameraLocation;
 	glm::vec3 cameraForward;
 	glm::vec3 cameraUp;
 
 	glm::mat4 projectionMatrix;
+};
+
+class VisualizationScene :public Scene {
+public:
+	VisualizationScene(Display& display) :Scene(display) {
+		cameraLocation = glm::vec3(0, 0, -10);
+		cameraForward = glm::vec3(0, 0, 1);
+		cameraUp = glm::vec3(0, 1, 0);
+	}
+	VisualizationScene(const VisualizationScene& other) :Scene(other) {
+
+	}
+	virtual ~VisualizationScene(){}
+
+	void rotateCamera(float dx, float dy,glm::vec3 location);
+	Scene* clone() {
+		return new VisualizationScene(*this);
+	}
+};
+
+class Menu : public Scene {
+public:
+	Menu(Display& display,Engine& engine) :Scene(display),engine(engine){
+		cameraLocation = glm::vec3(0, 0, -10);
+		cameraForward = glm::vec3(0, 0, 1);
+		cameraUp = glm::vec3(0, 1, 0);
+	}
+	Menu(const Menu& other):Scene(other),engine(other.engine){
+
+	}
+	virtual ~Menu(){}
+
+	void addButton(float x, float y, float width, float height, std::string text, std::function<void(Engine& engine)> action);
+	void addButton(glm::vec3 color,float x, float y, float width, float height, std::string text, std::function<void(Engine& engine)> action);
+	void rotateCamera(float dx,float dy,glm::vec3 location){}
+	Scene* clone() {
+		return new Menu(*this);
+	}
+private:
+	Engine& engine;
 };
 
 #endif
