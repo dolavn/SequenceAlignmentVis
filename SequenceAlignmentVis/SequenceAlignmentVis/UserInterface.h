@@ -57,9 +57,11 @@ void mouseMoveCallBack(GLFWwindow* window, double xpos, double ypos) {
 	if (mouse.pressed == LEFT_BUTTON) {
 		float dx = (float)mouse.dx / 10.0f;
 		float dy = (float)mouse.dy / 10.0f;
+		float x = (float)(mouse.xPos/(float)width)*5;
+		float y = (float)(mouse.yPos/(float)height)*5;
 		if (inputScene->getSelectedObj() == nullptr) {
 			glm::vec3 loc = followCube->getLocation();
-			inputScene->rotateCamera(dx, dy, followCube->getLocation());
+			inputScene->rotateCamera(dx, dy, glm::vec3(x,y,5));
 		}else {
 
 		}

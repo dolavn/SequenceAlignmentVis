@@ -298,6 +298,6 @@ void Menu::addButton(float x, float y, float width, float height, string text, f
 }
 
 void Menu::addButton(vec3 color,float x, float y, float width, float height, string text, function<void(Engine& engine)> action) {
-	Button button(color, x, y, width, height, text, cubeMesh, engine.getShader(), engine.getTextShader(), engine, action);
+	Button button(color, x, y, width, height, text,cubeMesh,engine.getShader(), engine.getTextShader(), engine, action);
 	addObject(&button);
 }

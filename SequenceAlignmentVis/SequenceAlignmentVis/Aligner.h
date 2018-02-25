@@ -115,6 +115,8 @@ private:
 distanceMatrix createMatrix(std::vector<char> alphabet, float match, float replace, float insert);
 bool testMatrix(distanceMatrix matrix, std::vector<char> alphabet);
 
+class Visualizer;
+class Engine;
 
 class Aligner {
 public:
@@ -132,14 +134,20 @@ public:
 	void addStrings(std::vector<std::string> newStrings);
 	void resetStrings();
 	void align();
+	void visualizeAlignment();
 	void alignStrings(std::vector<std::string> strings);
+	Visualizer* createVisualizer(Engine& e,int delay);
+
 	std::vector<std::string> getAlignment() { return alignment; }
 
 	inline float testCalcScore(const IndexArray& ind, const IndexArray& stringsInd) { return calcScore(ind, stringsInd); }
 	float testGlobalAlignment() { globalAlignment(); return (*table)[table->getMaxArr()]; }
+	friend class Visualizer;
 private:
 	void clearTable();
+	void initGlobalAlignment();
 	void globalAlignment();
+	void calcScore(IndexArray ind);
 	void restoreAlignment();
 	std::vector<IndexArray>* getStringIndicesVec(const IndexArray& ind, const std::vector<IndexArray>& lastIndices);
 	float calcScore(const IndexArray& ind,const IndexArray& stringsInd);
@@ -150,6 +158,7 @@ private:
 	std::vector<char> alphabet;
 	distanceMatrix matrix;
 	DPTable* table;
+	
 };
 
 

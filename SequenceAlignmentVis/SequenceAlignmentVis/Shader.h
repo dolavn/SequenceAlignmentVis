@@ -2,7 +2,7 @@
 #define SHADER_INCLUDED_H
 
 #include <string>
-#include "glm\glm.hpp"
+#include "glm/glm.hpp"
 
 class Shader
 {

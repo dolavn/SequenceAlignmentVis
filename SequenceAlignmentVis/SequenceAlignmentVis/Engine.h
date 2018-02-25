@@ -15,22 +15,28 @@ public:
 	void run();
 	void changeScene(Scene* newScene);
 
+	inline void addAdditionalFunction(std::function<bool()> func) { additionalFunctions.push_back(func); }
 	inline Display& getDisplay() { return d; }
 	inline Shader& getShader() { return *shader; }
 	inline Shader& getPickingShader() { return *pickingShader; }
 	inline Shader& getTextShader() { return *textShader; }
-
+	inline void close() { isRunning = false; glfwSetWindowShouldClose(d.m_window, GLFW_TRUE); }
 private:
 	mutable std::mutex mtx;
-	void clearScene();
-	void clearShaders();
-	void setupShaders();
-	static int getId(glm::vec3 ind);
+	std::thread::id drawingThread;
+	std::vector<std::function<bool()>> additionalFunctions;
+	bool isRunning = false;
 	Scene* currScene;
 	Shader* shader;
 	Shader* pickingShader;
 	Shader* textShader;
 	Display d;
+
+	void callAdditionalFunctions();
+	void clearScene();
+	void clearShaders();
+	void setupShaders();
+	static int getId(glm::vec3 ind);
 };
 
 #endif

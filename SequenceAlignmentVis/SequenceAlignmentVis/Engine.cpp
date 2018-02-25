@@ -39,10 +39,15 @@ void Engine::run() {
 	if (currScene == nullptr) {
 		throw std::runtime_error("No scene to run!");
 	}
+	if (isRunning) {
+		throw std::runtime_error("Engine already runs!");
+	}
+	drawingThread = std::this_thread::get_id();
 	while (!glfwWindowShouldClose(d.m_window))
 	{
 		Sleep(3);
 		mtx.lock();
+		callAdditionalFunctions();
 		if (glfwGetMouseButton(d.m_window, GLFW_MOUSE_BUTTON_LEFT)) {
 			d.Clear(0.0f, 0.0f, 0.0f, 1.0f);
 			currScene->drawScenePicking();
@@ -73,11 +78,27 @@ void Engine::clearScene() {
 }
 
 void Engine::changeScene(Scene* newScene) {
-	mtx.lock();
+	if (drawingThread != std::this_thread::get_id()) {
+		mtx.lock();
+	}
 	clearScene();
 	newScene->setShaders(shader, pickingShader, textShader);
 	currScene = newScene;
-	mtx.unlock();
+	inputScene = newScene;
+	if (drawingThread != std::this_thread::get_id()) {
+		mtx.unlock();
+	}
+}
+
+void Engine::callAdditionalFunctions() {
+	for (unsigned int i = 0; i < additionalFunctions.size(); ++i) {
+		bool del = !additionalFunctions[i]();
+		if (del) {
+			additionalFunctions[i] = additionalFunctions[additionalFunctions.size() - 1];
+			additionalFunctions.pop_back();
+			i--;
+		}
+	}
 }
 
 void Engine::setupShaders() {

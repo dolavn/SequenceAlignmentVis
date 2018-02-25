@@ -24,6 +24,7 @@ public:
 	inline void setLocation(glm::vec3 location) { this->location = location; updateModelMatrix(); }
 	inline void setRotate(glm::vec3 axis, float deg) { this->rotate = glm::rotate(rotate, deg, axis); updateModelMatrix(); }
 	inline void setScale(glm::vec3 scale) { this->scale = scale; updateModelMatrix(); }
+	inline void setColor(glm::vec3 color) { this->color = color; }
 	inline Shader& getDefaultShader() { return defaultShader; }
 	inline int getId() { return id; }
 	inline glm::vec3 getLocation() { return location; }

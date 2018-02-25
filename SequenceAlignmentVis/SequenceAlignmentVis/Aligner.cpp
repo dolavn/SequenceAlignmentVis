@@ -3,7 +3,10 @@
 /* Copyright (c) Dolav Nitay            */
 /****************************************/
 #include <limits>
+#include "Engine.h"
 #include "Aligner.h"
+#include "Visualizer.h"
+#include <sstream>
 using namespace std;
 
 Aligner::Aligner(vector<char> alphabet, distanceMatrix mat) :strings(), alphabet(alphabet), matrix(mat), table(nullptr) {
@@ -104,36 +107,63 @@ void Aligner::alignStrings(vector<string> strings) {
 	restoreAlignment();
 }
 
+Visualizer* Aligner::createVisualizer(Engine& e,int delay) {
+	Visualizer* ans = new Visualizer(*this, e,delay);
+	return ans;
+}
+
 void Aligner::globalAlignment() {
+	initGlobalAlignment();
 	vector<int> dimensions(strings.size());
 	for (unsigned int i = 0; i < dimensions.size(); ++i) {
-		dimensions[i] = strings[i].size()+1;
+		dimensions[i] = strings[i].size() + 1;
+	}
+	IndexArray ind(dimensions);
+	++ind;
+	for (; !ind.getOverflow(); ++ind) {
+		calcScore(ind);
+	}
+}
+
+void Aligner::initGlobalAlignment() {
+	vector<int> dimensions(strings.size());
+	for (unsigned int i = 0; i < dimensions.size(); ++i) {
+		dimensions[i] = strings[i].size() + 1;
 	}
 	clearTable();
 	table = new FullDPTable(dimensions);
 	FullDPTable& tableRef = static_cast<FullDPTable&>(*table);
 	IndexArray ind(dimensions);
-	tableRef[ind++] = 0.0f;
-	for (; !ind.getOverflow(); ++ind) {
-		vector<IndexArray>* indicesPtr = ind.getNextIndices(-1);
-		vector<IndexArray>& indicesVec = *indicesPtr;
-		vector<IndexArray>* stringIndicesVecPtr = getStringIndicesVec(ind,indicesVec);
-		vector<IndexArray>& stringIndicesVec = *stringIndicesVecPtr;
-		float max = -1 * numeric_limits<float>::infinity();
-		IndexArray greenArrow;
-		for (unsigned int i = 0; i < stringIndicesVec.size(); ++i) {
-			float score = calcScore(ind,stringIndicesVec[i]);
-			score = score + tableRef[indicesVec[i]];
-			if (score > max) {
-				max = score;
-				greenArrow = indicesVec[i];
-			}
-		}
-		tableRef[ind] = max;
-		tableRef.getGreenArrow(ind) = greenArrow;
-		delete(indicesPtr);
-		delete(stringIndicesVecPtr);
+	tableRef[ind] = 0.0f;
+}
+
+void Aligner::calcScore(IndexArray ind) {
+	if (table == nullptr) {
+		initGlobalAlignment();
 	}
+	FullDPTable& tableRef = static_cast<FullDPTable&>(*table);
+	vector<IndexArray>* indicesPtr = ind.getNextIndices(-1);
+	vector<IndexArray>& indicesVec = *indicesPtr;
+	vector<IndexArray>* stringIndicesVecPtr = getStringIndicesVec(ind, indicesVec);
+	vector<IndexArray>& stringIndicesVec = *stringIndicesVecPtr;
+	float max = -1 * numeric_limits<float>::infinity();
+	IndexArray greenArrow;
+	for (unsigned int i = 0; i < stringIndicesVec.size(); ++i) {
+		float score = calcScore(ind, stringIndicesVec[i]);
+		score = score + tableRef[indicesVec[i]];
+		if (score > max) {
+			max = score;
+			greenArrow = indicesVec[i];
+		}
+	}
+	tableRef[ind] = max;
+	tableRef.getGreenArrow(ind) = greenArrow;
+	delete(indicesPtr);
+	delete(stringIndicesVecPtr);
+}
+
+void Aligner::visualizeAlignment() {
+	std::cout << strings.size() << std::endl;
 }
 
 void Aligner::restoreAlignment() {

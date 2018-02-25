@@ -133,6 +133,7 @@
     <ClInclude Include="Text.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="UserInterface.h" />
+    <ClInclude Include="Visualizer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Aligner.cpp" />
@@ -150,6 +151,7 @@
     <ClCompile Include="stb_image.c" />
     <ClCompile Include="Text.cpp" />
     <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="Visualizer.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

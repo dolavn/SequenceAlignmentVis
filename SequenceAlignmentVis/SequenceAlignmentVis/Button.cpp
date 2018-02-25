@@ -37,7 +37,7 @@ void Button::draw(Shader* shader, glm::mat4 VP) {
 }
 
 void Button::setupText(string str, float x, float y, float width, float height) {
-	float xFinal = x + 0.5*str.length() / 2;
+	float xFinal = x + (float)(0.25f*str.length());
 	text = new Text(vec3(xFinal, y, 5), vec3(0, 0, 0), 2, str, textShader);
 }
 
