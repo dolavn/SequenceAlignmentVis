@@ -88,23 +88,77 @@ void Aligner::resetStrings() {
 	strings = vector<string>();
 }
 
-string Aligner::getString(int i) const {
-	if (i >= (int)strings.size()) {
-		throw out_of_range("Index out of range");
-	}
-	return strings[i];
+void Aligner::findGlobalAlignment() {
+	align(getGlobalAlignmentInit(), getGlobalAlignmentSol());
 }
 
-void Aligner::align() {
-	globalAlignment();
-	restoreAlignment();
+function<IndexArray()> Aligner::getFreeEndsAlignmentInit() {
+	return [this]()->IndexArray {
+		vector<int> dimensions(strings.size());
+		for (unsigned int i = 0; i < dimensions.size(); ++i) {
+			dimensions[i] = strings[i].size() + 1;
+		}
+		clearTable();
+		table = new FullDPTable(dimensions);
+		IndexArray ind(dimensions);
+		for (int i = 0; i < ind.getDimensions(); ++i) {
+			for (int j = 0; j < strings[i].size()+1; ++j) {
+				ind[i] = j;
+				(*table)[ind] = 0.0f;
+				ind[i] = 0;
+			}
+		}
+		ind = IndexArray(dimensions);
+		for (int i = 0; i < ind.getDimensions(); ++i) { ind[i] = 1; }
+		return ind;
+	};
+}
+
+function<IndexArray(DPTable& table)> Aligner::getFreeEndsSol() {
+	return [](DPTable& table)->IndexArray {
+		IndexArray ind = table.getMaxArr();
+		IndexArray maxInd = ind;
+		ind.resetIndex();
+		float max = -1 * numeric_limits<float>::infinity();
+		IndexArray sol = ind;
+		for (int i = 0; i < ind.getDimensions(); ++i) {
+			IndexArray copy = maxInd;
+			for (int j = 0; j <= maxInd[i]; ++j) {
+				copy[i] = j;
+				if (table[copy] > max) {
+					max = table[copy];
+					sol = copy;
+				}
+			}
+		}
+		return sol;
+	};
+}
+
+function<IndexArray()> Aligner::getGlobalAlignmentInit() {
+	return [this]()->IndexArray {
+		vector<int> dimensions(strings.size());
+		for (unsigned int i = 0; i < dimensions.size(); ++i) {
+			dimensions[i] = strings[i].size() + 1;
+		}
+		clearTable();
+		table = new FullDPTable(dimensions);
+		IndexArray ind(dimensions);
+		(*table)[ind++] = 0.0f;
+		return ind;
+	};
+}
+
+function<IndexArray(DPTable& table)> Aligner::getGlobalAlignmentSol() {
+	return [](DPTable& table)->IndexArray {
+		return table.getMaxArr();
+	};
 }
 
 void Aligner::alignStrings(vector<string> strings) {
 	resetStrings();
 	addStrings(strings);
-	globalAlignment();
-	restoreAlignment();
+	findGlobalAlignment();
 }
 
 Visualizer* Aligner::createVisualizer(Engine& e,int delay) {
@@ -112,40 +166,24 @@ Visualizer* Aligner::createVisualizer(Engine& e,int delay) {
 	return ans;
 }
 
-void Aligner::globalAlignment() {
-	initGlobalAlignment();
-	vector<int> dimensions(strings.size());
-	for (unsigned int i = 0; i < dimensions.size(); ++i) {
-		dimensions[i] = strings[i].size() + 1;
-	}
-	IndexArray ind(dimensions);
-	++ind;
+void Aligner::align(function<IndexArray()> initFunc, function<IndexArray(DPTable&)> findMax) {
+	IndexArray ind = initFunc();
+	initializedIndices = table->getActiveCells();
 	for (; !ind.getOverflow(); ++ind) {
-		calcScore(ind);
+		if (!wasInitialized(ind)) {
+			calcScore(ind);
+		}
 	}
-}
-
-void Aligner::initGlobalAlignment() {
-	vector<int> dimensions(strings.size());
-	for (unsigned int i = 0; i < dimensions.size(); ++i) {
-		dimensions[i] = strings[i].size() + 1;
-	}
-	clearTable();
-	table = new FullDPTable(dimensions);
-	FullDPTable& tableRef = static_cast<FullDPTable&>(*table);
-	IndexArray ind(dimensions);
-	tableRef[ind] = 0.0f;
+	restoreAlignment(findMax(*table));
 }
 
 void Aligner::calcScore(IndexArray ind) {
 	if (table == nullptr) {
-		initGlobalAlignment();
+		throw std::runtime_error("Table not initialized!");
 	}
 	FullDPTable& tableRef = static_cast<FullDPTable&>(*table);
-	vector<IndexArray>* indicesPtr = ind.getNextIndices(-1);
-	vector<IndexArray>& indicesVec = *indicesPtr;
-	vector<IndexArray>* stringIndicesVecPtr = getStringIndicesVec(ind, indicesVec);
-	vector<IndexArray>& stringIndicesVec = *stringIndicesVecPtr;
+	vector<IndexArray> indicesVec = ind.getNextIndices(-1);
+	vector<IndexArray> stringIndicesVec = getStringIndicesVec(ind, indicesVec);
 	float max = -1 * numeric_limits<float>::infinity();
 	IndexArray greenArrow;
 	for (unsigned int i = 0; i < stringIndicesVec.size(); ++i) {
@@ -158,15 +196,9 @@ void Aligner::calcScore(IndexArray ind) {
 	}
 	tableRef[ind] = max;
 	tableRef.getGreenArrow(ind) = greenArrow;
-	delete(indicesPtr);
-	delete(stringIndicesVecPtr);
 }
 
-void Aligner::visualizeAlignment() {
-	std::cout << strings.size() << std::endl;
-}
-
-void Aligner::restoreAlignment() {
+void Aligner::restoreAlignment(IndexArray optLocation) {
 	DPTable& tableRef = *table;
 	vector<char*> currAlignment(strings.size());
 	vector<char*> origPtrs(strings.size());
@@ -178,7 +210,7 @@ void Aligner::restoreAlignment() {
 		*currAlignment[i] = 0;
 		currAlignment[i] = currAlignment[i] - 1;
 	}
-	IndexArray curr = tableRef.getMaxArr();
+	IndexArray curr = optLocation;
 	IndexArray zero = curr;
 	zero.resetIndex();
 	while (curr != zero) {
@@ -208,11 +240,10 @@ bool testMatrix(distanceMatrix mat, vector<char> alphabet) {
 	return true;
 }
 
-vector<IndexArray>* Aligner::getStringIndicesVec(const IndexArray& ind, const vector<IndexArray>& lastIndices) {
-	vector<IndexArray>* ans = new vector<IndexArray>(lastIndices.size());
-	vector<IndexArray>& ansRef = *ans;
-	for (unsigned int i = 0; i < ansRef.size(); ++i) {
-		ansRef[i] = ind - lastIndices[i];
+vector<IndexArray> Aligner::getStringIndicesVec(const IndexArray& ind, const vector<IndexArray>& lastIndices) {
+	vector<IndexArray> ans(lastIndices.size());
+	for (unsigned int i = 0; i < ans.size(); ++i) {
+		ans[i] = ind - lastIndices[i];
 	}
 	return ans;
 }
@@ -252,6 +283,13 @@ int Aligner::stringLengthsSum() {
 		sum = sum + strings[i].size();
 	}
 	return sum;
+}
+
+bool Aligner::wasInitialized(IndexArray ind) {
+	for (auto it = initializedIndices.begin(); it != initializedIndices.end(); ++it) {
+		if (ind == *it) { return true; }
+	}
+	return false;
 }
 
 bool testAlphabet(vector<char> alphabet) {

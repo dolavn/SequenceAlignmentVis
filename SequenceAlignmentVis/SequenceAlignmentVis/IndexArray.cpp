@@ -108,9 +108,9 @@ void IndexArray::resetIndex() {
 	underflow = false;
 }
 
-vector<IndexArray>* IndexArray::getNextIndices(int inc) {
+vector<IndexArray> IndexArray::getNextIndices(int inc) {
 	vector<int> dim(dimensions, 2);
-	vector<IndexArray>* ans = new vector<IndexArray>();
+	vector<IndexArray> ans = vector<IndexArray>();
 	IndexArray ind(dim);
 	ind++;
 	for (; !ind.getOverflow(); ++ind) { //O(2^k) - Not good for non-small inputs!
@@ -125,7 +125,7 @@ vector<IndexArray>* IndexArray::getNextIndices(int inc) {
 				currInd[i] = afterInc;
 			}
 		}
-		if (isValid) { ans->push_back(currInd); }
+		if (isValid) { ans.push_back(currInd); }
 	}
 	return ans;
 }

@@ -7,6 +7,7 @@
 #define ALIGNER_H_
 
 #include <vector>
+#include <functional>
 #include <string>
 #include <map>
 #include "DPTable.h"
@@ -127,38 +128,46 @@ public:
 	~Aligner();
 
 	inline int getStringsNum() const { return strings.size(); }
-	inline std::string getString(int i) const;
+	inline std::string getString(int i) const {
+		if (i >= (int)strings.size()) {
+			throw std::out_of_range("Index out of range");
+		}
+		return strings[i];
+	};
 
 	void updateMatrix(distanceMatrix mat);
 	void addString(std::string str);
 	void addStrings(std::vector<std::string> newStrings);
 	void resetStrings();
-	void align();
-	void visualizeAlignment();
+	void findGlobalAlignment();
 	void alignStrings(std::vector<std::string> strings);
 	Visualizer* createVisualizer(Engine& e,int delay);
 
 	std::vector<std::string> getAlignment() { return alignment; }
 
 	inline float testCalcScore(const IndexArray& ind, const IndexArray& stringsInd) { return calcScore(ind, stringsInd); }
-	float testGlobalAlignment() { globalAlignment(); return (*table)[table->getMaxArr()]; }
+	float testGlobalAlignment() { findGlobalAlignment(); return (*table)[table->getMaxArr()]; }
 	friend class Visualizer;
 private:
 	void clearTable();
-	void initGlobalAlignment();
-	void globalAlignment();
+	std::function<IndexArray()> getGlobalAlignmentInit();
+	std::function<IndexArray(DPTable&)> getGlobalAlignmentSol();
+	std::function<IndexArray()> getFreeEndsAlignmentInit();
+	std::function<IndexArray(DPTable&)> getFreeEndsSol();
+	void align(std::function<IndexArray()> initFunc, std::function<IndexArray(DPTable&)> maxFunc);
 	void calcScore(IndexArray ind);
-	void restoreAlignment();
-	std::vector<IndexArray>* getStringIndicesVec(const IndexArray& ind, const std::vector<IndexArray>& lastIndices);
+	void restoreAlignment(IndexArray optLocation);
+	std::vector<IndexArray> getStringIndicesVec(const IndexArray& ind, const std::vector<IndexArray>& lastIndices);
 	float calcScore(const IndexArray& ind,const IndexArray& stringsInd);
 	int stringLengthsSum();
+	bool wasInitialized(IndexArray ind);
 
+	std::vector<IndexArray> initializedIndices;
 	std::vector<std::string> strings;
 	std::vector<std::string> alignment;
 	std::vector<char> alphabet;
 	distanceMatrix matrix;
 	DPTable* table;
-	
 };
 
 

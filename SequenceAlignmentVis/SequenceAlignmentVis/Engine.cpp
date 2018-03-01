@@ -26,6 +26,7 @@ Engine::Engine(int width,int height,std::string title):d(width,height,title){
 	float y = 0;
 	glfwSetCursorPosCallback(d.m_window, mouseMoveCallBack);
 	glfwSetMouseButtonCallback(d.m_window, mouseButtonCallBack);
+	glfwSetScrollCallback(d.m_window, scrollCallback);
 	followCube = &currScene->getObject(ind);
 	inputScene = currScene;
 }
@@ -75,6 +76,7 @@ void Engine::clearScene() {
 		delete(currScene);
 		currScene = nullptr;
 	}
+	clearAdditionalFunctions();
 }
 
 void Engine::changeScene(Scene* newScene) {
@@ -88,6 +90,10 @@ void Engine::changeScene(Scene* newScene) {
 	if (drawingThread != std::this_thread::get_id()) {
 		mtx.unlock();
 	}
+}
+
+void Engine::clearAdditionalFunctions() {
+	//additionalFunctions = vector<function<bool()>>();
 }
 
 void Engine::callAdditionalFunctions() {

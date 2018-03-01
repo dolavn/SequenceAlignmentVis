@@ -20,6 +20,7 @@ public:
 	virtual IndexArray getMaxArr() const=0;
 	virtual float& operator[](const IndexArray& index)=0;
 	virtual IndexArray& getGreenArrow(const IndexArray& index) = 0;
+	virtual std::vector<IndexArray> getActiveCells() = 0;
 	virtual void printTable()=0;
 	virtual DPTable* clone() = 0;
 
@@ -41,12 +42,15 @@ public:
 	IndexArray getMaxArr() const;
 	float& operator[](const IndexArray& index);
 	IndexArray& getGreenArrow(const IndexArray& index);
+	std::vector<IndexArray> getActiveCells();
+
 	void printTable();
 	DPTable* clone();
 
 private:
 	float* data;
 	IndexArray* greenArrows;
+	bool* activeCells;
 	unsigned int size;
 
 	void setupData(int size);

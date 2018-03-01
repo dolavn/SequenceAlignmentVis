@@ -8,6 +8,7 @@
 #include "Scene.h"
 #include "Engine.h"
 #include "Text.h"
+#include "TableCell.h"
 #include <vector>
 #include <sstream>
 
@@ -21,22 +22,13 @@ const vec3 GRAY_COLOR = vec3(0.8, 0.8, 0.9);
 
 const float INIT_X = 5.0f;
 const float INIT_Y = 5.0f;
-const float Z = 5.0f;
+const float INIT_Z = 5.0f;
 const float CUBE_SIZE = 2.1f;
 
-const int TEXT_SIZE = 2;
 
 Visualizer::Visualizer(Aligner& aligner, Engine& e,int delay) :delay(delay),alignerptr(new Aligner(aligner)), engine(e){
 	vector<int> sizes = { (int)aligner.strings[0].size()+1,(int)aligner.strings[1].size()+1};
-	ind = IndexArray(sizes);
-	aligner.initGlobalAlignment();
 	createScene();
-	int objInd = ((int)(*sceneTable)[ind]);
-	scene->getObject(objInd).setColor(GREEN_COLOR);
-	vec3 loc = scene->getObject(objInd).getLocation();
-	vec3 textLoc(loc.x, loc.y, loc.z - CUBE_SIZE / 2);
-	Text t(textLoc, BLACK_COLOR, TEXT_SIZE, "0", engine.getTextShader());
-	scene->addObject(&t);
 }
 
 Visualizer::Visualizer(const Visualizer& other) : delay(other.delay),alignerptr(new Aligner(*alignerptr)), engine(other.engine) {
@@ -50,25 +42,60 @@ Visualizer::~Visualizer() {
 	clear();
 }
 
+void Visualizer::globalAlignmentInit() {
+	init(alignerptr->getGlobalAlignmentInit());
+	maxFunc = alignerptr->getGlobalAlignmentSol();
+}
+
+void Visualizer::freeEndsInit() {
+	init(alignerptr->getFreeEndsAlignmentInit());
+	maxFunc = alignerptr->getFreeEndsSol();
+}
+
+void Visualizer::init(function<IndexArray()> initFunc) {
+	ind = initFunc();
+	alignerptr->initializedIndices = alignerptr->table->getActiveCells();
+	vector<IndexArray>& initCells = alignerptr->initializedIndices;
+	for (auto it = initCells.begin(); it != initCells.end(); ++it) {
+		fillCell(*it);
+	}
+}
+
+void Visualizer::markSolution(IndexArray ind) {
+	int objInd = ((int)(*sceneTable)[ind]);
+	TableCell& cell = static_cast<TableCell&>(scene->getObject(objInd));
+	cell.setColor(BLUE_COLOR);
+}
+
+void Visualizer::fillCell(IndexArray ind) {
+	Aligner& aligner = *alignerptr;
+	int objInd = ((int)(*sceneTable)[ind]);
+	TableCell& cell = static_cast<TableCell&>(scene->getObject(objInd));
+	cell.setColor(GREEN_COLOR);
+	float curr = (*aligner.table)[ind];
+	string s;
+	stringstream ss;
+	ss << (int)(curr);
+	ss >> s;
+	cell.changeText(s);
+}
+
+
 void Visualizer::step() {
 	counter++;
 	if (counter == delay) {
 		Aligner& aligner = *alignerptr;
 		counter = 0;
+		if (ind.getOverflow()) {
+			markSolution(maxFunc(*(aligner.table)));
+			finished = true; 
+			return; 
+		}
+		if (!aligner.wasInitialized(ind)) {
+			aligner.calcScore(ind);
+			fillCell(ind);
+		}
 		++ind;
-		if (ind.getOverflow()) { finished = true; return; }
-		int objInd = ((int)(*sceneTable)[ind]);
-		scene->getObject(objInd).setColor(GREEN_COLOR);
-		vec3 loc = scene->getObject(objInd).getLocation();
-		vec3 textLoc(loc.x, loc.y, loc.z - CUBE_SIZE / 2);
-		aligner.calcScore(ind);
-		float curr = (*aligner.table)[ind];
-		string s;
-		stringstream ss;
-		ss << (int)(curr);
-		ss >> s;
-		Text t(textLoc, BLACK_COLOR, TEXT_SIZE, s, engine.getTextShader());
-		scene->addObject(&t);
 	}
 }
 
@@ -84,59 +111,71 @@ bool Visualizer::createScene() {
 	return true;
 }
 
-void Visualizer::create2DScene() {
-	Aligner& aligner = *alignerptr;
-	Object3D topCube(BLUE_COLOR, scene->getCubeMesh(), engine.getShader());
-	topCube.setLocation(glm::vec3(INIT_X, INIT_Y, Z));
-	scene->addObject(&topCube);
-	float x = INIT_X-CUBE_SIZE;
-	float y = INIT_Y;
-	for (unsigned int i = 0; i < aligner.strings[0].size() + 1; i++) {
-		Object3D c(BLUE_COLOR, scene->getCubeMesh(), engine.getShader());
-		c.setLocation(vec3(x, y, Z));
-		string s;
-		stringstream ss;
-		ss << (i != 0 ? aligner.strings[0][i - 1] : ' ');
+void Visualizer::createStringRow(string str, vec3 rowDir,vec3 startPoint,vec3 rotateAxis,float rotateDeg) {
+	vec3 currLoc = startPoint;
+	for (unsigned int i = 0; i < str.size()+1; ++i) {
+		string s; stringstream ss;
+		ss << (i != 0 ? str[i - 1] : ' ');
 		ss >> s;
-		Text t(vec3(x, y, Z - CUBE_SIZE / 2), BLACK_COLOR, TEXT_SIZE, s, engine.getTextShader());
-		scene->addObject(&c);
-		scene->addObject(&t);
-		x = x - CUBE_SIZE;
-	}
-	x = INIT_X;
-	y = INIT_Y - CUBE_SIZE;
-	for (unsigned int i = 0; i < aligner.strings[1].size() + 1; i++) {
-		Object3D c(BLUE_COLOR, scene->getCubeMesh(), engine.getShader());
-		c.setLocation(glm::vec3(x, y, Z));
-		string s;
-		stringstream ss;
-		ss << (i > 0 && i<=aligner.strings[1].size() ? aligner.strings[1][i - 1] : ' ');
-		ss >> s;
-		Text t(glm::vec3(x, y, Z - CUBE_SIZE / 2), BLACK_COLOR, TEXT_SIZE, s, engine.getTextShader());
-		scene->addObject(&c);
-		scene->addObject(&t);
-		y = y - CUBE_SIZE;
-	}
-	y = INIT_Y - CUBE_SIZE;
-	std::vector<int> sizes = { (int)aligner.strings[0].size()+1,(int)aligner.strings[1].size()+1 };
-	sceneTable = new FullDPTable(sizes);
-	FullDPTable& tableRef = *sceneTable;
-	IndexArray ind(sizes);
-	for (unsigned int i = 0; i < aligner.strings[1].size()+1; ++i) {
-		x = INIT_X - CUBE_SIZE;
-		for (unsigned int j = 0; j < aligner.strings[0].size()+1; ++j) {
-			Object3D c(GRAY_COLOR, scene->getCubeMesh(), engine.getShader());
-			c.setLocation(glm::vec3(x, y, Z));
-			tableRef[ind] = (float)(scene->addObject(&c));
-			ind++;
-			x = x - CUBE_SIZE;
-		}
-		y = y - CUBE_SIZE;
+		TableCell cell(currLoc, BLUE_COLOR, BLACK_COLOR, s, scene->getCubeMesh(), engine.getShader(), engine.getTextShader());
+		if (rotateAxis!=vec3(0,0,0)) { cell.setRotate(rotateAxis, rotateDeg); }
+		scene->addObject(&cell);
+		currLoc = currLoc + rowDir;
 	}
 }
 
-void Visualizer::create3DScene() {
+void Visualizer::createTable(IndexArray ind, vec3 startPoint) {
+	const int dim = ind.getDimensions();
+	FullDPTable& tableRef = *sceneTable;
+	if (dim > 3 || dim < 2) {
+		throw std::invalid_argument("Index array should be 2 or 3 dimensional.");
+	}
+	for (; !ind.getOverflow(); ++ind) {
+		Object3D c(GRAY_COLOR, scene->getCubeMesh(), engine.getShader());
+		vec3 location = startPoint - CUBE_SIZE*vec3(ind[1], ind[0], dim == 2 ? 0.0f : -ind[2]);
+		TableCell cell(location, GRAY_COLOR, BLACK_COLOR, "", scene->getCubeMesh(), engine.getShader(), engine.getTextShader());
+		c.setLocation(location);
+		tableRef[ind] = scene->addObject(&cell);
+	}
+}
 
+void Visualizer::create2DScene() {
+	Aligner& aligner = *alignerptr;
+	vec3 locationTop(INIT_X, INIT_Y, INIT_Z);
+	TableCell top(locationTop, BLUE_COLOR, BLACK_COLOR, "", scene->getCubeMesh(), engine.getShader(), engine.getTextShader());
+	top.setRotate(vec3(0, 1, 0),-90.0f);
+	scene->addObject(&top);
+	vec3 startPoint(INIT_X - CUBE_SIZE, INIT_Y, INIT_Z);
+	createStringRow(aligner.strings[1], vec3(-CUBE_SIZE, 0, 0), startPoint,vec3(0,0,0),0.0f);
+
+	startPoint = vec3(INIT_X, INIT_Y - CUBE_SIZE, INIT_Z);
+	createStringRow(aligner.strings[0], vec3(0, -CUBE_SIZE, 0), startPoint,vec3(0,0,0),0.0f);
+
+	std::vector<int> sizes = { (int)aligner.strings[0].size()+1,(int)aligner.strings[1].size()+1 };
+	sceneTable = new FullDPTable(sizes);
+	IndexArray ind(sizes);
+	createTable(ind, vec3(INIT_X - CUBE_SIZE, INIT_Y - CUBE_SIZE, INIT_Z));
+}
+
+void Visualizer::create3DScene() {
+	Aligner& aligner = *alignerptr;
+	Object3D topCube(BLUE_COLOR, scene->getCubeMesh(), engine.getShader());
+	topCube.setLocation(glm::vec3(INIT_X, INIT_Y, INIT_Z));
+	scene->addObject(&topCube);
+
+	vec3 startPoint(INIT_X - CUBE_SIZE, INIT_Y, INIT_Z);
+	createStringRow(aligner.strings[1], vec3(-CUBE_SIZE, 0, 0), startPoint,vec3(0,0,0),0.0f);
+
+	startPoint = vec3(INIT_X, INIT_Y - CUBE_SIZE, INIT_Z);
+	createStringRow(aligner.strings[0], vec3(0, -CUBE_SIZE, 0), startPoint,vec3(0,0,0),0.0f);
+
+	startPoint = vec3(INIT_X, INIT_Y, INIT_Z+CUBE_SIZE);
+	createStringRow(aligner.strings[2], vec3(0, 0, CUBE_SIZE), startPoint,vec3(0,1,0),-90.0f);
+
+	std::vector<int> sizes = { (int)aligner.strings[0].size() + 1,(int)aligner.strings[1].size() + 1 ,(int)aligner.strings[2].size()+1};
+	sceneTable = new FullDPTable(sizes);
+	IndexArray ind(sizes);
+	createTable(ind, vec3(INIT_X - CUBE_SIZE, INIT_Y - CUBE_SIZE, INIT_Z+CUBE_SIZE));
 }
 
 void Visualizer::clear() {

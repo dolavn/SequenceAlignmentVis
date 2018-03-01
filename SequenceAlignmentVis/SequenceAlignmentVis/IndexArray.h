@@ -15,6 +15,8 @@
 
 #include <vector>
 #include <iostream>
+#include <iterator>
+
 
 /*
 A class to hold a vector of indices, which used
@@ -41,7 +43,7 @@ public:
 	inline bool getOverflow() const { return overflow; }
 	inline bool getUnderflow() const { return underflow; }
 
-	std::vector<IndexArray>* getNextIndices(int inc);
+	std::vector<IndexArray> getNextIndices(int inc);
 	void resetIndex();
 
 	inline friend bool operator==(const IndexArray& first, const IndexArray& second) { return cmp(first, second) == 0; }

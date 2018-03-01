@@ -21,6 +21,7 @@ private:
 	void setupText(std::string str,float x,float y,float width,float height);
 	Mesh* mesh;
 	DrawableObject* text;
+	int objInd = -1;
 	std::function<void(Engine& engine)> action;
 };
 

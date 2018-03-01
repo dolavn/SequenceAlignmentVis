@@ -1,12 +1,19 @@
 #include "Text.h"
+
 using namespace glm;
 using namespace std;
-Text::Text(vec3 location,vec3 color,int size,string str,Shader& defaultShader):DrawableObject(defaultShader,color),size(size),str(str){
+
+Text::Text(vec3 location, vec3 color, float size,float zOffset, string str, Shader& defaultShader) :DrawableObject(defaultShader, color), size(size), zOffset(zOffset),str(str) {
 	init();
 	setLocation(location);
 }
 
-Text::Text(const Text& other):DrawableObject(other),size(other.size),str(other.str){
+Text::Text(vec3 location,vec3 color,float size,string str,Shader& defaultShader):DrawableObject(defaultShader,color),size(size),zOffset(0),str(str){
+	init();
+	setLocation(location);
+}
+
+Text::Text(const Text& other):DrawableObject(other),size(other.size),str(other.str),zOffset(other.zOffset){
 	init();
 }
 
@@ -18,10 +25,6 @@ void Text::clear() {
 	for (unsigned int i = 0; i < meshes.size(); ++i) {
 		delete(meshes[i]);
 	}
-	if (texture != nullptr) {
-		delete(texture);
-		texture = nullptr;
-	}
 }
 
 Mesh* Text::createChar(float startX,char c) {
@@ -31,10 +34,10 @@ Mesh* Text::createChar(float startX,char c) {
 	vec2 topLeft(start), bottomLeft(start.x, start.y + CHAR_SIZE_Y), topRight(start.x + CHAR_SIZE_X, start.y), bottomRight(start.x + CHAR_SIZE_X, start.y + CHAR_SIZE_Y);
 	Vertex vertices[] =
 	{
-		Vertex(glm::vec3(startX + sizeX, -sizeY / 2, 0), bottomLeft, glm::vec3(0, 0, -1),glm::vec3(0, 0, 1)),
-		Vertex(glm::vec3(startX, -sizeY/2, 0), bottomRight, glm::vec3(0, 0, -1),glm::vec3(0, 0, 1)),
-		Vertex(glm::vec3(startX, sizeY/2, 0), topRight, glm::vec3(0, 0, -1),glm::vec3(0, 0, 1)),
-		Vertex(glm::vec3(startX + sizeX, sizeY / 2, 0), topLeft, glm::vec3(0, 0, -1),glm::vec3(0, 0, 1)),
+		Vertex(glm::vec3(startX + sizeX / 2.0f, -sizeY / 2, zOffset), bottomLeft, glm::vec3(0, 0, -1),glm::vec3(0, 0, 1)),
+		Vertex(glm::vec3(startX - sizeX / 2.0f, -sizeY / 2, zOffset), bottomRight, glm::vec3(0, 0, -1),glm::vec3(0, 0, 1)),
+		Vertex(glm::vec3(startX - sizeX / 2.0f, sizeY / 2, zOffset), topRight, glm::vec3(0, 0, -1),glm::vec3(0, 0, 1)),
+		Vertex(glm::vec3(startX + sizeX / 2.0f, sizeY / 2, zOffset), topLeft, glm::vec3(0, 0, -1),glm::vec3(0, 0, 1)),
 	};
 
 	unsigned int indices[] = { 3, 0, 1,
@@ -49,12 +52,10 @@ void Text::init() {
 		Mesh* curr = createChar(0-i*size*(CHAR_SIZE_X / CHAR_SIZE_Y), str[i]);
 		meshes.push_back(curr);
 	}
-	texture = new Texture("./res/textures/font.bmp");
 }
 
 void Text::draw(Shader* shader,mat4 VP) {
 	Shader& s = shader != nullptr ? *shader : defaultShader;
-	texture->setTexture();
 	updateModelMatrix();
 	vec3 idVec = getIdVec();
 	glm::mat4 MVP = VP*modelMatrix;
@@ -65,7 +66,6 @@ void Text::draw(Shader* shader,mat4 VP) {
 		meshes[i]->Draw();
 	}
 	s.setColor(vec3(0,0,0), idVec);
-	texture->resetTexture();
 }
 
 DrawableObject* Text::clone() {

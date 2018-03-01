@@ -6,6 +6,7 @@ using namespace glm;
 Scene::Scene(Display& display):display(display){
 	cubeMesh = createCubeMesh();
 	arrowMesh = createArrowMesh();
+	initFontTexture();
 }
 
 Scene::Scene(const Scene& other) : display(other.display), shader(other.shader), pickingShader(other.pickingShader), textShader(other.textShader), cameraLocation(other.cameraLocation), cameraForward(other.cameraForward), cameraUp(other.cameraUp), projectionMatrix(other.projectionMatrix) {
@@ -21,36 +22,44 @@ Scene::Scene(const Scene& other) : display(other.display), shader(other.shader),
 	freeIndicesTextObjects = other.freeIndicesTextObjects;
 	cubeMesh = createCubeMesh();
 	arrowMesh = createArrowMesh();
+	initFontTexture();
 }
 
 Scene::~Scene() {
 	clear();
+	clearFontTexture();
 }
 
 void Scene::drawScene() {
 	mtx.lock();
+	lockingThread = std::this_thread::get_id();
 	setupProjectionMatrix();
 	for (unsigned int i = 0; i < objects.size(); ++i) {
 		if (objects[i] != nullptr) {
 			objects[i]->draw(nullptr, projectionMatrix);
 		}
 	}
+	fontTexture->setTexture();
 	for (unsigned int i = 0; i < textObjects.size(); ++i) {
 		if (textObjects[i] != nullptr) {
 			textObjects[i]->draw(nullptr, projectionMatrix);
 		}
 	}
+	fontTexture->resetTexture();
+	lockingThread = std::thread::id();
 	mtx.unlock();
 }
 
 void Scene::drawScenePicking() {
 	mtx.lock();
+	lockingThread = std::this_thread::get_id();
 	setupProjectionMatrix();
 	for (unsigned int i = 0; i < objects.size(); ++i) {
 		if (objects[i] != nullptr) {
 			objects[i]->draw(pickingShader, projectionMatrix);
 		}
 	}
+	lockingThread = std::thread::id();
 	mtx.unlock();
 }
 
@@ -124,7 +133,8 @@ void Scene::onClickBackground() {
 }
 
 int Scene::addObject(DrawableObject* object) {
-	mtx.lock();
+	bool shouldLock = lockingThread != std::this_thread::get_id();
+	if (shouldLock) { mtx.lock(); }
 	DrawableObject* objectToAdd = object->clone();
 	objectToAdd->setScene(this);
 	bool text = &object->getDefaultShader() == textShader;
@@ -141,30 +151,45 @@ int Scene::addObject(DrawableObject* object) {
 	}
 	objectToAdd->setId(!text ? (ind+1) : -1);
 	int ans = text ? -1 - ind : ind;
-	mtx.unlock();
+	if (shouldLock) { mtx.unlock(); }
 	return ans;
 }
 
+void Scene::initFontTexture() {
+	fontTexture = new Texture(TEXTURE_PATH);
+}
+
+void Scene::clearFontTexture() {
+	if (fontTexture != nullptr) {
+		delete(fontTexture);
+		fontTexture = nullptr;
+	}
+}
+
 void Scene::removeDrawable(int ind) {
-	mtx.lock();
+	bool shouldLock = lockingThread != std::this_thread::get_id();
+	if (shouldLock) { mtx.lock(); }
 	vector<DrawableObject*>& list = ind >= 0 ? objects : textObjects;
 	int corrInd = ind >= 0 ? ind : -ind - 1;
 	vector<int>& freeIndices = ind >= 0 ? freeIndicesObjects : freeIndicesTextObjects;
+	if (corrInd >= list.size()) { return; }
 	if (list[corrInd] != nullptr) {
 		delete(list[corrInd]);
 		list[corrInd] = nullptr;
 		freeIndices.push_back(corrInd);
 	}
-	mtx.unlock();
+	if (shouldLock) { mtx.unlock(); }
 }
 
 DrawableObject& Scene::getObject(int ind) {
-	mtx.lock();
+	bool shouldLock = lockingThread != std::this_thread::get_id();
+	if (shouldLock) { mtx.lock(); }
 	vector<DrawableObject*>& list = ind >= 0 ? objects : textObjects;
 	int corrInd = ind >= 0 ? ind : -ind - 1;
-	mtx.unlock();
+	if (shouldLock) { mtx.unlock(); }
 	return *list[corrInd];
 }
+
 
 Mesh* Scene::createArrowMesh() {
 	Vertex vertices[] =
@@ -284,13 +309,36 @@ void Scene::clear() {
 	}
 }
 
-void VisualizationScene::rotateCamera(float dx, float dy,glm::vec3 location) {
-	glm::vec3 diff(dx, dy, 0);
+void VisualizationScene::rotateCamera(float dx, float dy,glm::vec3 target) {
+	float dist = glm::length(target - cameraLocation); 
+	glm::vec4 forward4 = glm::vec4(cameraForward.x, cameraForward.y, cameraForward.z, 1.0f);
+	glm::vec4 right4 = glm::vec4(cameraRight.x, cameraRight.y, cameraRight.z, 1.0f);
+	glm::vec4 up4 = glm::vec4(cameraUp.x, cameraUp.y, cameraUp.z, 1.0f);
+	glm::mat4 rotation = glm::mat4(1);
+	rotation = rotation*glm::rotate(dx, cameraUp);
+	rotation = rotation*glm::rotate(-dy, cameraRight);
+	forward4 = forward4*rotation;
+	right4 = right4*rotation;
+	up4 = up4*rotation;
+	cameraForward = vec3(forward4.x, forward4.y, forward4.z);
+	cameraUp = vec3(up4.x, up4.y, up4.z);
+	cameraRight = vec3(right4.x, right4.y, right4.z);
+	cameraLocation = target - dist*cameraForward;
+	shader->setLightDirection(cameraForward);
+}
+
+void VisualizationScene::zoomCamera(float z) {
+	glm::vec3 diff = z*cameraForward;
 	glm::vec3 currLoc = cameraLocation;
 	currLoc = currLoc + diff;
-	glm::vec3 direction = location - currLoc;
 	cameraLocation = currLoc;
-	cameraForward = direction;
+}
+
+void VisualizationScene::moveCamera(float dx,float dy) {
+	glm::vec3 diff = dx*cameraRight + dy*cameraUp;
+	glm::vec3 currLoc = cameraLocation;
+	currLoc = currLoc + diff;
+	cameraLocation = currLoc;
 }
 
 void Menu::addButton(float x, float y, float width, float height, string text, function<void(Engine& engine)> action) {

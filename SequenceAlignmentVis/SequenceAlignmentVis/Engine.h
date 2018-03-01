@@ -33,6 +33,7 @@ private:
 	Display d;
 
 	void callAdditionalFunctions();
+	void clearAdditionalFunctions();
 	void clearScene();
 	void clearShaders();
 	void setupShaders();

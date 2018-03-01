@@ -54,22 +54,20 @@ void mouseMoveCallBack(GLFWwindow* window, double xpos, double ypos) {
 	int width=0, height=0;
 	glfwGetWindowSize(window, &width, &height);
 	mouse.setPos((int)xpos, height - (int)ypos);
+	float dx = (float)mouse.dx / 10.0f;
+	float dy = (float)mouse.dy / 10.0f;
+	float x = (float)(mouse.xPos / (float)width) * 5;
+	float y = (float)(mouse.yPos / (float)height) * 5;
 	if (mouse.pressed == LEFT_BUTTON) {
-		float dx = (float)mouse.dx / 10.0f;
-		float dy = (float)mouse.dy / 10.0f;
-		float x = (float)(mouse.xPos/(float)width)*5;
-		float y = (float)(mouse.yPos/(float)height)*5;
 		if (inputScene->getSelectedObj() == nullptr) {
 			glm::vec3 loc = followCube->getLocation();
-			inputScene->rotateCamera(dx, dy, glm::vec3(x,y,5));
-		}else {
-
+			inputScene->rotateCamera(2*dx, 2*dy, glm::vec3(x,y,5));
 		}
 	}
 	if (mouse.pressed == RIGHT_BUTTON) {
-
+		glm::vec3 loc = followCube->getLocation();
+		inputScene->moveCamera(dx, -dy);
 	}
-	
 }
 
 void mouseButtonCallBack(GLFWwindow* window, int button, int action, int mods) {
@@ -82,6 +80,10 @@ void mouseButtonCallBack(GLFWwindow* window, int button, int action, int mods) {
 	if (action == GLFW_RELEASE) {
 		mouse.release();
 	}
+}
+
+void scrollCallback(GLFWwindow* window, double xOffset, double yOffset) {
+	inputScene->zoomCamera((float)(yOffset));
 }
 
 #endif

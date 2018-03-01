@@ -21,6 +21,8 @@ public:
 	virtual ~Scene();
 
 	virtual void rotateCamera(float dx, float dy,glm::vec3 location) = 0;
+	virtual void zoomCamera(float z) = 0;
+	virtual void moveCamera(float dx, float dy) = 0;
 	virtual Scene* clone() = 0;
 	void setShaders(Shader* shader, Shader* pickingShader, Shader* textShader) {
 		this->shader = shader; this->pickingShader = pickingShader; this->textShader = textShader;
@@ -40,15 +42,19 @@ public:
 	Shader& getTextShader() { return *textShader; }
 protected:
 	mutable std::mutex mtx;
+	std::thread::id lockingThread;
 	Mesh* createCubeMesh();
 	Mesh* createArrowMesh();
 	DrawableObject* selectedObj = nullptr;
 	void setupProjectionMatrix();
 	void clear();
+	void initFontTexture();
+	void clearFontTexture();
 	Display& display;
 	Shader* shader;
 	Shader* pickingShader;
 	Shader* textShader;
+	Texture* fontTexture;
 	Mesh* cubeMesh;
 	Mesh* arrowMesh;
 
@@ -67,20 +73,25 @@ protected:
 
 class VisualizationScene :public Scene {
 public:
-	VisualizationScene(Display& display) :Scene(display) {
+	VisualizationScene(Display& display) :Scene(display){
 		cameraLocation = glm::vec3(0, 0, -10);
 		cameraForward = glm::vec3(0, 0, 1);
 		cameraUp = glm::vec3(0, 1, 0);
+		cameraRight = glm::vec3(1, 0, 0);
 	}
-	VisualizationScene(const VisualizationScene& other) :Scene(other) {
+	VisualizationScene(const VisualizationScene& other) :Scene(other){
 
 	}
 	virtual ~VisualizationScene(){}
 
 	void rotateCamera(float dx, float dy,glm::vec3 location);
+	void zoomCamera(float z);
+	void moveCamera(float dx, float dy);
 	Scene* clone() {
 		return new VisualizationScene(*this);
 	}
+private:
+	glm::vec3 cameraRight;
 };
 
 class Menu : public Scene {
@@ -98,6 +109,8 @@ public:
 	void addButton(float x, float y, float width, float height, std::string text, std::function<void(Engine& engine)> action);
 	void addButton(glm::vec3 color,float x, float y, float width, float height, std::string text, std::function<void(Engine& engine)> action);
 	void rotateCamera(float dx,float dy,glm::vec3 location){}
+	void zoomCamera(float z){}
+	void moveCamera(float dx,float dy){}
 	Scene* clone() {
 		return new Menu(*this);
 	}
