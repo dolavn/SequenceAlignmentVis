@@ -19,6 +19,8 @@ public:
 	virtual void draw(Shader* shader, glm::mat4 vp) = 0;
 	virtual DrawableObject* clone() = 0;
 	virtual void onClick() = 0;
+	virtual void onRelease() = 0;
+	virtual void onKeyClick(int key) = 0;
 
 	inline void setId(int id) { this->id = id; }
 	inline void setLocation(glm::vec3 location) { this->location = location; updateModelMatrix(); }
@@ -54,6 +56,8 @@ public:
 	inline void resetTexture() { this->tex = nullptr; }
 
 	void onClick();
+	void onRelease();
+	void onKeyClick(int key);
 	void draw(Shader* shader,glm::mat4 VP);
 	DrawableObject* clone();
 private:

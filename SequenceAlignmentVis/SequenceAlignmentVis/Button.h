@@ -12,6 +12,8 @@ public:
 	Button(const Button& other);
 	virtual ~Button();
 	void onClick();
+	void onRelease(){}
+	void onKeyClick(int key);
 	void draw(Shader* shader, glm::mat4 VP);
 	DrawableObject* clone();
 private:

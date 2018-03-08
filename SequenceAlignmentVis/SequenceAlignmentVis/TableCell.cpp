@@ -21,7 +21,15 @@ TableCell::~TableCell() {
 	clearText();
 }
 
+void TableCell::onKeyClick(int key) {
+
+}
+
 void TableCell::onClick() {
+
+}
+
+void TableCell::onRelease() {
 
 }
 

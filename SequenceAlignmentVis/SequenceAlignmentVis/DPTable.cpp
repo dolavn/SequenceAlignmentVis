@@ -63,6 +63,10 @@ void FullDPTable::freeData() {
 		delete[] activeCells;
 		activeCells = nullptr;
 	}
+	if (initialized != nullptr) {
+		delete[] initialized;
+		initialized = nullptr;
+	}
 }
 
 IndexArray FullDPTable::getMaxArr() const{
@@ -105,6 +109,16 @@ void FullDPTable::printTable(){
 	}
 }
 
+void FullDPTable::setInitialized(const IndexArray& ind) {
+	int i = convertIndex(ind);
+	initialized[i] = true;
+}
+
+bool FullDPTable::getInitialized(const IndexArray& ind) {
+	int i = convertIndex(ind);
+	return initialized[i];
+}
+
 DPTable* FullDPTable::clone() {
 	return new FullDPTable(*this);
 }
@@ -113,9 +127,11 @@ void FullDPTable::setupData(int size) {
 	data = new float[size];
 	greenArrows = new IndexArray[size];
 	activeCells = new bool[size];
+	initialized = new bool[size];
 	for (int i = 0; i < size; ++i) {
 		data[i] = 0;
 		activeCells[i] = false;
+		initialized[i] = false;
 	}
 }
 
@@ -123,10 +139,12 @@ void FullDPTable::copyData(const FullDPTable& other) {
 	data = new float[size];
 	greenArrows = new IndexArray[size];
 	activeCells = new bool[size];
+	initialized = new bool[size];
 	for (unsigned int i = 0; i < size; i++) {
 		data[i] = other.data[i];
 		greenArrows[i] = other.greenArrows[i];
 		activeCells[i] = other.activeCells[i];
+		initialized[i] = other.initialized[i];
 	}
 }
 

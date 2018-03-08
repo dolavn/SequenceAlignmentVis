@@ -12,6 +12,17 @@
 #include <map>
 #include "DPTable.h"
 
+
+typedef struct calcFunctions {
+	std::function<IndexArray()> initFunc;
+	std::function<IndexArray(DPTable&)> maxFunc;
+	std::function<void(const IndexArray&, DPTable&)> stepFunc;
+
+	calcFunctions(std::function<IndexArray()> initFunc, std::function<IndexArray(DPTable&)> maxFunc, std::function<void(const IndexArray&, DPTable&)> stepFunc) :initFunc(initFunc), maxFunc(maxFunc),stepFunc(stepFunc){
+
+	}
+} calcFunctions;
+
 bool testString(std::string string, std::vector<char> alphabet);
 bool testAlphabet(std::vector<char> alphabet);
 bool contains(std::vector<char> alphabet, char c);
@@ -140,6 +151,7 @@ public:
 	void addStrings(std::vector<std::string> newStrings);
 	void resetStrings();
 	void findGlobalAlignment();
+	void findFreeEndsAlignment();
 	void alignStrings(std::vector<std::string> strings);
 	Visualizer* createVisualizer(Engine& e,int delay);
 
@@ -150,25 +162,24 @@ public:
 	friend class Visualizer;
 private:
 	void clearTable();
-	std::function<IndexArray()> getGlobalAlignmentInit();
-	std::function<IndexArray(DPTable&)> getGlobalAlignmentSol();
-	std::function<IndexArray()> getFreeEndsAlignmentInit();
-	std::function<IndexArray(DPTable&)> getFreeEndsSol();
-	void align(std::function<IndexArray()> initFunc, std::function<IndexArray(DPTable&)> maxFunc);
-	void calcScore(IndexArray ind);
+	calcFunctions getGlobalAlignmentFunc();
+	calcFunctions getFreeEndsAlignmentFunc();
+	calcFunctions getLocalAlignmentFunc();
+	void align(calcFunctions alignmentFunctions);
+	void calcScore(IndexArray ind, std::function<void(const IndexArray&, DPTable&)> stepFunc);
 	void restoreAlignment(IndexArray optLocation);
 	std::vector<IndexArray> getStringIndicesVec(const IndexArray& ind, const std::vector<IndexArray>& lastIndices);
 	float calcScore(const IndexArray& ind,const IndexArray& stringsInd);
 	int stringLengthsSum();
-	bool wasInitialized(IndexArray ind);
 
-	std::vector<IndexArray> initializedIndices;
 	std::vector<std::string> strings;
 	std::vector<std::string> alignment;
 	std::vector<char> alphabet;
 	distanceMatrix matrix;
 	DPTable* table;
 };
+
+int findMaxDiff(const IndexArray&,const IndexArray&);
 
 
 #endif

@@ -21,6 +21,10 @@ void Button::onClick() {
 	action(engine);
 }
 
+void Button::onKeyClick(int key) {
+
+}
+
 void Button::draw(Shader* shader, glm::mat4 VP) {
 	if (objInd == -1) {
 		objInd = scn->addObject(text);

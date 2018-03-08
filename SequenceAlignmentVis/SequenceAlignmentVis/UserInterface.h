@@ -60,12 +60,10 @@ void mouseMoveCallBack(GLFWwindow* window, double xpos, double ypos) {
 	float y = (float)(mouse.yPos / (float)height) * 5;
 	if (mouse.pressed == LEFT_BUTTON) {
 		if (inputScene->getSelectedObj() == nullptr) {
-			glm::vec3 loc = followCube->getLocation();
 			inputScene->rotateCamera(2*dx, 2*dy, glm::vec3(x,y,5));
 		}
 	}
 	if (mouse.pressed == RIGHT_BUTTON) {
-		glm::vec3 loc = followCube->getLocation();
 		inputScene->moveCamera(dx, -dy);
 	}
 }
@@ -86,4 +84,21 @@ void scrollCallback(GLFWwindow* window, double xOffset, double yOffset) {
 	inputScene->zoomCamera((float)(yOffset));
 }
 
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+	switch (key)
+	{
+	case GLFW_KEY_ESCAPE:
+		if (action == GLFW_PRESS)
+			glfwSetWindowShouldClose(window, GLFW_TRUE);
+		break;
+	default:
+		break;
+	}
+	if (action == GLFW_PRESS) {
+		if (inputScene != nullptr && inputScene->getSelectedObj() != nullptr) {
+			inputScene->getSelectedObj()->onKeyClick(key);
+		}
+	}
+}
 #endif

@@ -9,6 +9,7 @@
 #include "Engine.h"
 #include "Text.h"
 #include "TableCell.h"
+#include "Button.h"
 #include <vector>
 #include <sstream>
 
@@ -31,7 +32,7 @@ Visualizer::Visualizer(Aligner& aligner, Engine& e,int delay) :delay(delay),alig
 	createScene();
 }
 
-Visualizer::Visualizer(const Visualizer& other) : delay(other.delay),alignerptr(new Aligner(*alignerptr)), engine(other.engine) {
+Visualizer::Visualizer(const Visualizer& other) : delay(other.delay),alignerptr(other.alignerptr), engine(other.engine) {
 	if (other.scene != nullptr) {
 		scene = other.scene->clone();
 	}
@@ -43,19 +44,29 @@ Visualizer::~Visualizer() {
 }
 
 void Visualizer::globalAlignmentInit() {
-	init(alignerptr->getGlobalAlignmentInit());
-	maxFunc = alignerptr->getGlobalAlignmentSol();
+	calcFunctions functions = alignerptr->getGlobalAlignmentFunc();
+	init(functions.initFunc);
+	maxFunc = functions.maxFunc;
+	stepFunc = functions.stepFunc;
 }
 
 void Visualizer::freeEndsInit() {
-	init(alignerptr->getFreeEndsAlignmentInit());
-	maxFunc = alignerptr->getFreeEndsSol();
+	calcFunctions functions = alignerptr->getFreeEndsAlignmentFunc();
+	init(functions.initFunc);
+	maxFunc = functions.maxFunc;
+	stepFunc = functions.stepFunc;
+}
+
+void Visualizer::localAlignmentInit() {
+	calcFunctions functions = alignerptr->getLocalAlignmentFunc();
+	init(functions.initFunc);
+	maxFunc = functions.maxFunc;
+	stepFunc = functions.stepFunc;
 }
 
 void Visualizer::init(function<IndexArray()> initFunc) {
 	ind = initFunc();
-	alignerptr->initializedIndices = alignerptr->table->getActiveCells();
-	vector<IndexArray>& initCells = alignerptr->initializedIndices;
+	vector<IndexArray>& initCells = (*alignerptr->table).getActiveCells();
 	for (auto it = initCells.begin(); it != initCells.end(); ++it) {
 		fillCell(*it);
 	}
@@ -80,27 +91,42 @@ void Visualizer::fillCell(IndexArray ind) {
 	cell.changeText(s);
 }
 
+void Visualizer::finish() {
+	markSolution(maxFunc(*(alignerptr->table)));
+	finished = true;
+}
+
 
 void Visualizer::step() {
 	counter++;
 	if (counter == delay) {
-		Aligner& aligner = *alignerptr;
 		counter = 0;
+		if (stop) { return; }
+		Aligner& aligner = *alignerptr;
 		if (ind.getOverflow()) {
-			markSolution(maxFunc(*(aligner.table)));
-			finished = true; 
+			finish();
 			return; 
 		}
-		if (!aligner.wasInitialized(ind)) {
-			aligner.calcScore(ind);
-			fillCell(ind);
+		while ((*aligner.table).getInitialized(ind)) {
+			++ind;
+			if (ind.getOverflow()) {
+				finish();
+				return;
+			}
 		}
+		aligner.calcScore(ind,stepFunc);
+		fillCell(ind);
 		++ind;
 	}
 }
 
 bool Visualizer::createScene() {
 	scene = new VisualizationScene(engine.getDisplay());
+	auto func = [this](Engine& e) {
+		stop = !stop;
+	};
+	Button b(GREEN_COLOR, 8.0f, 8.0f, 2.0f, 1.0f, "Stop", scene->getCubeMesh(), engine.getShader(), engine.getTextShader(), engine, func);
+	scene->addObject(&b);
 	if (alignerptr->strings.size() < 2 || alignerptr->strings.size() > 3) { return false; }
 	if (alignerptr->strings.size() == 2) {
 		create2DScene();
@@ -135,7 +161,7 @@ void Visualizer::createTable(IndexArray ind, vec3 startPoint) {
 		vec3 location = startPoint - CUBE_SIZE*vec3(ind[1], ind[0], dim == 2 ? 0.0f : -ind[2]);
 		TableCell cell(location, GRAY_COLOR, BLACK_COLOR, "", scene->getCubeMesh(), engine.getShader(), engine.getTextShader());
 		c.setLocation(location);
-		tableRef[ind] = scene->addObject(&cell);
+		tableRef[ind] = (float)(scene->addObject(&cell));
 	}
 }
 

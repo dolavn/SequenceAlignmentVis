@@ -43,7 +43,7 @@ public:
 	inline bool getOverflow() const { return overflow; }
 	inline bool getUnderflow() const { return underflow; }
 
-	std::vector<IndexArray> getNextIndices(int inc);
+	std::vector<IndexArray> getNextIndices(int inc) const;
 	void resetIndex();
 
 	inline friend bool operator==(const IndexArray& first, const IndexArray& second) { return cmp(first, second) == 0; }
@@ -62,6 +62,8 @@ public:
 		ans -= second;
 		return ans;
 	}
+
+	friend std::ostream& operator<<(std::ostream& stream, const IndexArray& arr);
 private:
 	unsigned int dimensions;
 	std::vector<int> arr;
@@ -69,7 +71,6 @@ private:
 	bool overflow;
 	bool underflow;
 	
-	friend std::ostream& operator<<(std::ostream& stream, const IndexArray& arr);
 
 	friend static bool sameDimensions(const IndexArray& first, const IndexArray& second);
 	friend static int cmp(const IndexArray& first, const IndexArray& second);

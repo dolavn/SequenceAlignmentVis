@@ -10,6 +10,8 @@ public:
 	TableCell(const TableCell& other);
 	virtual ~TableCell();
 	void onClick();
+	void onRelease();
+	void onKeyClick(int key);
 	void draw(Shader* shader, glm::mat4 VP);
 	void changeText(std::string str);
 	DrawableObject* clone();

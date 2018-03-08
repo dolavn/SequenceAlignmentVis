@@ -108,7 +108,7 @@ void IndexArray::resetIndex() {
 	underflow = false;
 }
 
-vector<IndexArray> IndexArray::getNextIndices(int inc) {
+vector<IndexArray> IndexArray::getNextIndices(int inc) const{
 	vector<int> dim(dimensions, 2);
 	vector<IndexArray> ans = vector<IndexArray>();
 	IndexArray ind(dim);

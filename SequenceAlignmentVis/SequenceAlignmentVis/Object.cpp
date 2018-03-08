@@ -51,6 +51,14 @@ void Object3D::onClick() {
 	scn->setSelectedObj(this);
 }
 
+void Object3D::onRelease() {
+	scn->setSelectedObj(nullptr);
+}
+
+void Object3D::onKeyClick(int key) {
+
+}
+
 DrawableObject* Object3D::clone() {
 	return new Object3D(*this);
 }

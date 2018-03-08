@@ -172,7 +172,7 @@ void Scene::removeDrawable(int ind) {
 	vector<DrawableObject*>& list = ind >= 0 ? objects : textObjects;
 	int corrInd = ind >= 0 ? ind : -ind - 1;
 	vector<int>& freeIndices = ind >= 0 ? freeIndicesObjects : freeIndicesTextObjects;
-	if (corrInd >= list.size()) { return; }
+	if (corrInd >= (int)list.size()) { return; }
 	if (list[corrInd] != nullptr) {
 		delete(list[corrInd]);
 		list[corrInd] = nullptr;

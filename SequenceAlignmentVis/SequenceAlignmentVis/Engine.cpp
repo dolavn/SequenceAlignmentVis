@@ -6,28 +6,10 @@ using namespace std;
 
 Engine::Engine(int width,int height,std::string title):d(width,height,title){
 	setupShaders();
-	currScene = new VisualizationScene(d);
-	currScene->setShaders(shader, pickingShader, textShader);
-	Object3D c(glm::vec3(1, 0, 0), currScene->getCubeMesh(), currScene->getShader());
-	Object3D c2(glm::vec3(0, 0, 1), currScene->getCubeMesh(), currScene->getShader());
-	Object3D c3(glm::vec3(0, 1, 0), currScene->getCubeMesh(), currScene->getShader());
-
-	c.setLocation(vec3(-2.0f, 1.0f, 3.0f));
-	
-
-	c2.setLocation(vec3(3.0f, 1.0f, 0.0f));
-	currScene->addObject(new Text(vec3(-2.0f, 3.0f, 1.9f), vec3(0, 0, 0), 2, "4", currScene->getTextShader()));
-
-	c3.setLocation(vec3(-2.0f, 3.0f, 3.0f));
-
-	int ind = currScene->addObject(&c);
-	int ind2 = currScene->addObject(&c2);
-	int ind3 = currScene->addObject(&c3);
-	float y = 0;
 	glfwSetCursorPosCallback(d.m_window, mouseMoveCallBack);
 	glfwSetMouseButtonCallback(d.m_window, mouseButtonCallBack);
 	glfwSetScrollCallback(d.m_window, scrollCallback);
-	followCube = &currScene->getObject(ind);
+	glfwSetKeyCallback(d.m_window, key_callback);
 	inputScene = currScene;
 }
 
@@ -55,6 +37,8 @@ void Engine::run() {
 			unsigned char data[4];
 			glReadPixels(mouse.xPos, mouse.yPos, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, data);
 			int ind = getId(vec3(data[0], data[1], data[2]));
+			DrawableObject* selObj = currScene->getSelectedObj();
+			if (selObj != nullptr) { selObj->onRelease(); }
 			if (ind >= 0) {
 				currScene->getObject(ind).onClick();
 			}
@@ -83,10 +67,10 @@ void Engine::changeScene(Scene* newScene) {
 	if (drawingThread != std::this_thread::get_id()) {
 		mtx.lock();
 	}
-	clearScene();
+	//clearScene();
 	newScene->setShaders(shader, pickingShader, textShader);
-	currScene = newScene;
 	inputScene = newScene;
+	currScene = newScene;
 	if (drawingThread != std::this_thread::get_id()) {
 		mtx.unlock();
 	}

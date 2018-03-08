@@ -20,10 +20,13 @@ public:
 
 	void globalAlignmentInit();
 	void freeEndsInit();
+	void localAlignmentInit();
 
 	void step();
 private:
+	bool stop = false;
 	bool createScene();
+	inline void finish();
 	void init(std::function<IndexArray()> initFunc);
 	void create2DScene();
 	void createStringRow(std::string str, glm::vec3 rowDirection, glm::vec3 startPoint,glm::vec3 rotateAxis,float rotateDeg);
@@ -37,6 +40,7 @@ private:
 	bool finished=false;
 	IndexArray ind;
 	std::function<IndexArray(DPTable&)> maxFunc;
+	std::function<void(const IndexArray&, DPTable&)> stepFunc;
 	Aligner* alignerptr;
 	Engine& engine;
 	FullDPTable* sceneTable;
