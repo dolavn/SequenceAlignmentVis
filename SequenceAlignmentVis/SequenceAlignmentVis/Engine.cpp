@@ -1,6 +1,8 @@
 #include <Windows.h>
 #include "Engine.h"
 #include "UserInterface.h"
+#include "MessageBox.h"
+
 using namespace glm;
 using namespace std;
 
@@ -38,11 +40,17 @@ void Engine::run() {
 			glReadPixels(mouse.xPos, mouse.yPos, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, data);
 			int ind = getId(vec3(data[0], data[1], data[2]));
 			DrawableObject* selObj = currScene->getSelectedObj();
-			if (selObj != nullptr) { selObj->onRelease(); }
 			if (ind >= 0) {
+				if (selObj != nullptr && selObj->getId()!=ind) { 
+					printf("ind:%d\nselObj:%d\n", ind, selObj->getId());
+					selObj->onRelease(); 
+				}
 				currScene->getObject(ind).onClick();
 			}
 			else {
+				if (selObj != nullptr) {
+					selObj->onRelease();
+				}
 				currScene->onClickBackground();
 			}
 		}
@@ -53,6 +61,15 @@ void Engine::run() {
 		glfwPollEvents();
 		mtx.unlock();
 	}
+}
+
+void Engine::showAlert(string title, string text) {
+	if (currScene == nullptr) { return; }
+	UI::Messagebox m(vec3(0.8f, 0.2f, 0.2f), vec3(0.0f, 0.0f, 0.0f), 6.0f, 8.0f, 1.0f, 1.0f, title, text, *this);
+	m.setOnDismiss([](Engine& e) {e.cont(); });
+	int ind = currScene->addObject(&m);
+	currScene->setSelectedObj(&(currScene->getObject(ind)));
+	halt();
 }
 
 void Engine::clearScene() {
@@ -81,6 +98,7 @@ void Engine::clearAdditionalFunctions() {
 }
 
 void Engine::callAdditionalFunctions() {
+	if (!runAdditionalFunctions) { return; }
 	for (unsigned int i = 0; i < additionalFunctions.size(); ++i) {
 		bool del = !additionalFunctions[i]();
 		if (del) {

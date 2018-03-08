@@ -17,7 +17,7 @@ class RadioButton :public DrawableObject {
 public:
 	RadioButton(float x, float y, std::string str, Shader& shader, T value);
 	RadioButton(const RadioButton& other);
-	~RadioButton();
+	virtual ~RadioButton();
 	void draw(Shader* shader, glm::mat4 vp);
 	DrawableObject* clone();
 	void onClick();

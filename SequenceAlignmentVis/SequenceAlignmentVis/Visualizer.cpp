@@ -20,6 +20,7 @@ const vec3 GREEN_COLOR = vec3(0.2f, 0.8f, 0.2f);
 const vec3 BLUE_COLOR = vec3(0.1f, 0.1f, 1.0f);
 const vec3 BLACK_COLOR = vec3(0.0f, 0.0f, 0.0f);
 const vec3 GRAY_COLOR = vec3(0.8, 0.8, 0.9);
+const vec3 RED_COLOR = vec3(1.0f, 0.0f, 0.0f);
 
 const float INIT_X = 5.0f;
 const float INIT_Y = 5.0f;
@@ -125,8 +126,13 @@ bool Visualizer::createScene() {
 	auto func = [this](Engine& e) {
 		stop = !stop;
 	};
-	Button b(GREEN_COLOR, 8.0f, 8.0f, 2.0f, 1.0f, "Stop", scene->getCubeMesh(), engine.getShader(), engine.getTextShader(), engine, func);
+	Button b(GREEN_COLOR, 2.0f, 8.0f, 2.0f, 1.0f, "Stop", scene->getCubeMesh(),engine, func);
+	Button exit(RED_COLOR, 8.0f, 8.0f, 2.0f, 1.0f, "Exit", scene->getCubeMesh(), engine, [this](Engine& e) {
+		e.changeScene(prevScene);
+		delete(this);
+	});
 	scene->addObject(&b);
+	scene->addObject(&exit);
 	if (alignerptr->strings.size() < 2 || alignerptr->strings.size() > 3) { return false; }
 	if (alignerptr->strings.size() == 2) {
 		create2DScene();

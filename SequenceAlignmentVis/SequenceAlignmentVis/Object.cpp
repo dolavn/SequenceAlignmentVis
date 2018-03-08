@@ -1,11 +1,12 @@
 #include "Object.h"
 #include "Scene.h"
+
 DrawableObject::DrawableObject(Shader& defaultShader, glm::vec3 color) :id(-1), defaultShader(defaultShader), color(color){
 
 }
 
 glm::vec3 DrawableObject::getIdVec() {
-	int tempId = getId();
+	int tempId = getId()+1;
 	int ri = tempId % 256;
 	tempId = tempId / 256;
 	int gi = tempId % 256;

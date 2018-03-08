@@ -3,7 +3,7 @@
 using namespace glm;
 using namespace std;
 
-Button::Button(vec3 color, float x, float y, float width, float height, string str, Mesh* mesh, Shader& shader, Shader& textShader, Engine& engine,function<void(Engine& engine)> action):DrawableObject(shader,color),textShader(textShader),engine(engine),mesh(mesh),text(nullptr),action(action) {
+Button::Button(vec3 color, float x, float y, float width, float height, string str, Mesh* mesh, Engine& engine,function<void(Engine& engine)> action):DrawableObject(engine.getShader(),color),textShader(engine.getTextShader()),engine(engine),mesh(mesh),text(nullptr),action(action) {
 	setupText(str, x, y, width, height);
 	setLocation(vec3(x, y, 6.1));
 	setScale(vec3(width, height, 1));

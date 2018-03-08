@@ -91,7 +91,6 @@ void TextBox::createMesh() {
 		3, 1, 2
 	};
 	mesh = new Mesh(vertices, sizeof(vertices) / sizeof(vertices[0]), indices, sizeof(indices) / sizeof(indices[0]));
-
 }
 
 void TextBox::clearText() {

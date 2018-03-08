@@ -90,6 +90,9 @@
     <ClInclude Include="RadioButton.h">
       <Filter>Header Files\UI</Filter>
     </ClInclude>
+    <ClInclude Include="MessageBox.h">
+      <Filter>Header Files\UI</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="mainTester.cpp">
@@ -147,6 +150,9 @@
       <Filter>Source Files\UI</Filter>
     </ClCompile>
     <ClCompile Include="RadioButton.cpp">
+      <Filter>Source Files\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="MessageBox.cpp">
       <Filter>Source Files\UI</Filter>
     </ClCompile>
   </ItemGroup>

@@ -16,11 +16,15 @@ public:
 	DrawableObject(Shader& defaultShader, glm::vec3 color);
 	DrawableObject(const DrawableObject& other) :defaultShader(other.defaultShader), color(other.color), location(other.location), rotate(other.rotate),scale(other.scale), modelMatrix(other.modelMatrix) {	}
 	
+	virtual ~DrawableObject(){}
+
 	virtual void draw(Shader* shader, glm::mat4 vp) = 0;
 	virtual DrawableObject* clone() = 0;
 	virtual void onClick() = 0;
 	virtual void onRelease() = 0;
 	virtual void onKeyClick(int key) = 0;
+
+	
 
 	inline void setId(int id) { this->id = id; }
 	inline void setLocation(glm::vec3 location) { this->location = location; updateModelMatrix(); }
@@ -50,7 +54,7 @@ class Object3D:public DrawableObject {
 public:
 	Object3D(glm::vec3 color,Mesh* mesh,Shader& shader);
 	Object3D(const Object3D& other);
-	~Object3D();
+	virtual ~Object3D();
 
 	inline void setTexture(Texture* tex) { this->tex = tex; }
 	inline void resetTexture() { this->tex = nullptr; }

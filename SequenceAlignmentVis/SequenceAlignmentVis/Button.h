@@ -8,7 +8,7 @@
 
 class Button :public DrawableObject {
 public:
-	Button(glm::vec3 color, float x,float y, float width, float height,std::string str,Mesh* mesh, Shader& shader,Shader& textShader, Engine& engine,std::function<void(Engine& engine)> action);
+	Button(glm::vec3 color, float x,float y, float width, float height,std::string str,Mesh* mesh,Engine& engine,std::function<void(Engine& engine)> action);
 	Button(const Button& other);
 	virtual ~Button();
 	void onClick();

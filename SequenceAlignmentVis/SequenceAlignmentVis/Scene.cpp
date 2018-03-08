@@ -133,8 +133,6 @@ void Scene::onClickBackground() {
 }
 
 int Scene::addObject(DrawableObject* object) {
-	bool shouldLock = lockingThread != std::this_thread::get_id();
-	if (shouldLock) { mtx.lock(); }
 	DrawableObject* objectToAdd = object->clone();
 	objectToAdd->setScene(this);
 	bool text = &object->getDefaultShader() == textShader;
@@ -149,9 +147,8 @@ int Scene::addObject(DrawableObject* object) {
 	else {
 		list.push_back(objectToAdd);
 	}
-	objectToAdd->setId(!text ? (ind+1) : -1);
+	objectToAdd->setId(!text ? (ind) : -1);
 	int ans = text ? -1 - ind : ind;
-	if (shouldLock) { mtx.unlock(); }
 	return ans;
 }
 
@@ -167,18 +164,16 @@ void Scene::clearFontTexture() {
 }
 
 void Scene::removeDrawable(int ind) {
-	bool shouldLock = lockingThread != std::this_thread::get_id();
-	if (shouldLock) { mtx.lock(); }
 	vector<DrawableObject*>& list = ind >= 0 ? objects : textObjects;
 	int corrInd = ind >= 0 ? ind : -ind - 1;
 	vector<int>& freeIndices = ind >= 0 ? freeIndicesObjects : freeIndicesTextObjects;
 	if (corrInd >= (int)list.size()) { return; }
 	if (list[corrInd] != nullptr) {
+		printf("deleting\n");
 		delete(list[corrInd]);
 		list[corrInd] = nullptr;
 		freeIndices.push_back(corrInd);
 	}
-	if (shouldLock) { mtx.unlock(); }
 }
 
 DrawableObject& Scene::getObject(int ind) {
@@ -346,6 +341,6 @@ void Menu::addButton(float x, float y, float width, float height, string text, f
 }
 
 void Menu::addButton(vec3 color,float x, float y, float width, float height, string text, function<void(Engine& engine)> action) {
-	Button button(color, x, y, width, height, text,cubeMesh,engine.getShader(), engine.getTextShader(), engine, action);
+	Button button(color, x, y, width, height, text,cubeMesh,engine, action);
 	addObject(&button);
 }

@@ -21,7 +21,7 @@ public:
 	void globalAlignmentInit();
 	void freeEndsInit();
 	void localAlignmentInit();
-
+	void setPrevScene(Scene* prevScene) { this->prevScene = prevScene; }
 	void step();
 private:
 	bool stop = false;
@@ -44,6 +44,7 @@ private:
 	Aligner* alignerptr;
 	Engine& engine;
 	FullDPTable* sceneTable;
+	Scene* prevScene;
 	Scene* scene;
 };
 

@@ -14,7 +14,10 @@ public:
 	virtual ~Engine();
 	void run();
 	void changeScene(Scene* newScene);
+	void showAlert(std::string title, std::string text);
 
+	inline void halt() { runAdditionalFunctions = false; }
+	inline void cont() { runAdditionalFunctions = true; }
 	inline void addAdditionalFunction(std::function<bool()> func) { additionalFunctions.push_back(func); }
 	inline Display& getDisplay() { return d; }
 	inline Shader& getShader() { return *shader; }
@@ -25,6 +28,7 @@ private:
 	mutable std::mutex mtx;
 	std::thread::id drawingThread;
 	std::vector<std::function<bool()>> additionalFunctions;
+	bool runAdditionalFunctions = true;
 	bool isRunning = false;
 	Scene* currScene;
 	Shader* shader;
