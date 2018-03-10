@@ -1,3 +1,8 @@
+/****************************************/
+/* TableCell.cpp                        */
+/* Copyright (c) Dolav Nitay            */
+/****************************************/
+
 #include "TableCell.h"
 #include "Scene.h"
 #include "glm/ext.hpp"

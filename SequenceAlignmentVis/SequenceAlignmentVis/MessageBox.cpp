@@ -1,3 +1,8 @@
+/****************************************/
+/* MessageBox.cpp                       */
+/* Copyright (c) Dolav Nitay            */
+/****************************************/
+
 #include "Messagebox.h"
 #include "Engine.h"
 #include <iostream>

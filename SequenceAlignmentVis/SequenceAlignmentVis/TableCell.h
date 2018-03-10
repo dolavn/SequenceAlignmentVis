@@ -1,3 +1,8 @@
+/****************************************/
+/* TableCell.h                          */
+/* Copyright (c) Dolav Nitay            */
+/****************************************/
+
 #ifndef TABLE_CELL_H
 #define TABLE_CELL_H
 

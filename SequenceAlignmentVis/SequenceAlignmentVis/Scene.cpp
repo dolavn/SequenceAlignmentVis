@@ -1,3 +1,8 @@
+/****************************************/
+/* Scene.cpp                            */
+/* Copyright (c) Dolav Nitay            */
+/****************************************/
+
 #include "Scene.h"
 #include "Button.h"
 using namespace std;

@@ -1,3 +1,8 @@
+/****************************************/
+/* MessageBox.h                         */
+/* Copyright (c) Dolav Nitay            */
+/****************************************/
+
 #ifndef MESSAGE_BOX_H_
 #define MESSAGE_BOX_H_
 

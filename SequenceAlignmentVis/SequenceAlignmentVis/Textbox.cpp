@@ -1,3 +1,8 @@
+/****************************************/
+/* Textbox.cpp                          */
+/* Copyright (c) Dolav Nitay            */
+/****************************************/
+
 #include "Textbox.h"
 #include "Engine.h"
 #include "Text.h"

@@ -1,3 +1,8 @@
+/****************************************/
+/* Texture.h                            */
+/* Copyright (c) Dolav Nitay            */
+/****************************************/
+
 #ifndef TEXTURE_H_
 #define TEXTURE_H_
 #include <string>

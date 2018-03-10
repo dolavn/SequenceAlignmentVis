@@ -1,3 +1,8 @@
+/****************************************/
+/* Text.cpp                             */
+/* Copyright (c) Dolav Nitay            */
+/****************************************/
+
 #include "Text.h"
 
 using namespace glm;

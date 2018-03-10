@@ -1,3 +1,8 @@
+/****************************************/
+/* Button.cpp                           */
+/* Copyright (c) Dolav Nitay            */
+/****************************************/
+
 #include "Button.h"
 #include <iostream>
 using namespace glm;

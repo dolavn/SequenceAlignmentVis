@@ -1,3 +1,8 @@
+/****************************************/
+/* RadioButton.cpp                      */
+/* Copyright (c) Dolav Nitay            */
+/****************************************/
+
 #include "RadioButton.h"
 #include "Scene.h"
 #include "Text.h"

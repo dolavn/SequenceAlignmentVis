@@ -1,3 +1,8 @@
+/****************************************/
+/* Scene.h                              */
+/* Copyright (c) Dolav Nitay            */
+/****************************************/
+
 #ifndef SCENE_H_
 #define SCENE_H_
 #include "Shader.h"

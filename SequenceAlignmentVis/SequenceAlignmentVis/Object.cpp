@@ -1,3 +1,8 @@
+/****************************************/
+/* Object.cpp                           */
+/* Copyright (c) Dolav Nitay            */
+/****************************************/
+
 #include "Object.h"
 #include "Scene.h"
 

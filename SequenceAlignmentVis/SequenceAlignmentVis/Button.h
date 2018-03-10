@@ -1,3 +1,8 @@
+/****************************************/
+/* Button.h                             */
+/* Copyright (c) Dolav Nitay            */
+/****************************************/
+
 #ifndef BUTTON_H_
 #define BUTTON_H_
 

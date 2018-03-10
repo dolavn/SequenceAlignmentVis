@@ -1,9 +1,11 @@
+
+
 #ifndef USER_INTERFACE_H_
 #define USER_INTERFACE_H_
 
 #include "Scene.h"
 
-//inline int abs(int x) { return x >= 0 ? x : -x; }
+inline int abs(int x) { return x >= 0 ? x : -x; }
 
 enum Movement { NO_MOVEMENT, UP, RIGHT, DOWN, LEFT };
 enum Button { LEFT_BUTTON, RIGHT_BUTTON, NO_BUTTON };

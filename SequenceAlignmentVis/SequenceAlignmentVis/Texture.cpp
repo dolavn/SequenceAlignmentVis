@@ -1,3 +1,8 @@
+/****************************************/
+/* Texture.cpp                          */
+/* Copyright (c) Dolav Nitay            */
+/****************************************/
+
 #include "Texture.h"
 #include "stb_image.h"
 #include <iostream>

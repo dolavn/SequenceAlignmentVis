@@ -1,3 +1,8 @@
+/****************************************/
+/* Textbox.h                            */
+/* Copyright (c) Dolav Nitay            */
+/****************************************/
+
 #ifndef TEXTBOX_H_
 #define TEXTBOX_H_
 

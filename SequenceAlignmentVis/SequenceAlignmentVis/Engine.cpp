@@ -1,3 +1,8 @@
+/****************************************/
+/* Engine.cpp                           */
+/* Copyright (c) Dolav Nitay            */
+/****************************************/
+
 #include <Windows.h>
 #include "Engine.h"
 #include "UserInterface.h"

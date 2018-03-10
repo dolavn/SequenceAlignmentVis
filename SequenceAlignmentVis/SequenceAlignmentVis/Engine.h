@@ -1,3 +1,8 @@
+/****************************************/
+/* Engine.h                             */
+/* Copyright (c) Dolav Nitay            */
+/****************************************/
+
 #ifndef ENGINE_H_
 #define ENGINE_H_
 

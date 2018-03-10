@@ -1,3 +1,8 @@
+/****************************************/
+/* RadioButton.h                        */
+/* Copyright (c) Dolav Nitay            */
+/****************************************/
+
 #ifndef RADIO_BUTTON_H_
 #define RADIO_BUTTON_H_
 
