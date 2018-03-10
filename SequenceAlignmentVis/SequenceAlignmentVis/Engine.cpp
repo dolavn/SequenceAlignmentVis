@@ -42,7 +42,6 @@ void Engine::run() {
 			DrawableObject* selObj = currScene->getSelectedObj();
 			if (ind >= 0) {
 				if (selObj != nullptr && selObj->getId()!=ind) { 
-					printf("ind:%d\nselObj:%d\n", ind, selObj->getId());
 					selObj->onRelease(); 
 				}
 				currScene->getObject(ind).onClick();

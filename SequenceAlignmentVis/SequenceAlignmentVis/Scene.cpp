@@ -169,7 +169,6 @@ void Scene::removeDrawable(int ind) {
 	vector<int>& freeIndices = ind >= 0 ? freeIndicesObjects : freeIndicesTextObjects;
 	if (corrInd >= (int)list.size()) { return; }
 	if (list[corrInd] != nullptr) {
-		printf("deleting\n");
 		delete(list[corrInd]);
 		list[corrInd] = nullptr;
 		freeIndices.push_back(corrInd);
