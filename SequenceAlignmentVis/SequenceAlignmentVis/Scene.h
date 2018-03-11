@@ -5,10 +5,11 @@
 
 #ifndef SCENE_H_
 #define SCENE_H_
+
 #include "Shader.h"
 #include "Display.h"
 #include "Mesh.h"
-#include "Object.h"
+#include "Drawable.h"
 #include "Text.h"
 #include <string>
 #include <vector>

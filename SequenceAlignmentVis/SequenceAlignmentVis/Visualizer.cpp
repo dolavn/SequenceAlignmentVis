@@ -4,7 +4,7 @@
 /****************************************/
 
 #include "Visualizer.h"
-#include "Object.h"
+#include "Drawable.h"
 #include "Scene.h"
 #include "Engine.h"
 #include "Text.h"
@@ -94,6 +94,7 @@ void Visualizer::fillCell(IndexArray ind) {
 
 void Visualizer::finish() {
 	markSolution(maxFunc(*(alignerptr->table)));
+	engine.showAlert("Alignment finished!","");
 	finished = true;
 }
 

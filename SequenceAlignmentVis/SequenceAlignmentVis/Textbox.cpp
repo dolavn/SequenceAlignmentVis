@@ -77,8 +77,12 @@ void TextBox::draw(Shader* shader, glm::mat4 VP) {
 }
 
 void TextBox::createText(string str) {
-	float size = min(2.0f, 2*width / (float(str.size())));
-	vec3 location = vec3(x + width / 2.0f, y, Z_COORDINATE);
+	/*First estimation of the size of each char, used to calculate
+	the maximum width of the text area in the text box.*/
+	float size = min(2.0f, 2*width / (float(str.size()))); 
+	float maxWidth = 2 * (width - size*CHAR_SIZE_X / CHAR_SIZE_Y);
+	size = min(2.0f, maxWidth / (float(str.size()))); //Final size of each char
+	vec3 location = vec3(x + width / 2.0f-size*CHAR_SIZE_X/CHAR_SIZE_Y, y, Z_COORDINATE);
 	text = new Text(location, BLACK_COLOR, size , str, textShader);
 	text->setZOffset(Z_OFFSET);
 }

@@ -28,7 +28,10 @@ Text::~Text() {
 
 void Text::clear() {
 	for (unsigned int i = 0; i < meshes.size(); ++i) {
-		delete(meshes[i]);
+		if (meshes[i] != nullptr) {
+			delete(meshes[i]);
+			meshes[i] = nullptr;
+		}
 	}
 }
 

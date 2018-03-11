@@ -6,7 +6,7 @@
 #ifndef TABLE_CELL_H
 #define TABLE_CELL_H
 
-#include "Object.h"
+#include "Drawable.h"
 #include "Text.h"
 
 class TableCell :public DrawableObject {

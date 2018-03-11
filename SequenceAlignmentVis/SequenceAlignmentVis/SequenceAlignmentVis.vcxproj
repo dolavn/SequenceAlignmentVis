@@ -123,7 +123,7 @@
     <ClInclude Include="Button.h" />
     <ClInclude Include="Engine.h" />
     <ClInclude Include="MessageBox.h" />
-    <ClInclude Include="Object.h" />
+    <ClInclude Include="Drawable.h" />
     <ClInclude Include="Display.h" />
     <ClInclude Include="DPTable.h" />
     <ClInclude Include="IndexArray.h" />
@@ -145,7 +145,7 @@
     <ClCompile Include="Button.cpp" />
     <ClCompile Include="Engine.cpp" />
     <ClCompile Include="MessageBox.cpp" />
-    <ClCompile Include="Object.cpp" />
+    <ClCompile Include="Drawable.cpp" />
     <ClCompile Include="Display.cpp" />
     <ClCompile Include="DPTable.cpp" />
     <ClCompile Include="IndexArray.cpp" />

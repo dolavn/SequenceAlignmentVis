@@ -6,7 +6,7 @@
 #ifndef TEXTBOX_H_
 #define TEXTBOX_H_
 
-#include "Object.h"
+#include "Drawable.h"
 
 class Text;
 class Engine;

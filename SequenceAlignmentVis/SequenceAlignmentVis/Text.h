@@ -11,7 +11,7 @@ const float CHAR_SIZE_Y = 0.09f;
 
 #include "Mesh.h"
 #include "Shader.h"
-#include "Object.h"
+#include "Drawable.h"
 #include "Texture.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/transform.hpp>

@@ -1,9 +1,9 @@
 /****************************************/
-/* Object.cpp                           */
+/* Drawable.cpp                         */
 /* Copyright (c) Dolav Nitay            */
 /****************************************/
 
-#include "Object.h"
+#include "Drawable.h"
 #include "Scene.h"
 
 DrawableObject::DrawableObject(Shader& defaultShader, glm::vec3 color) :id(-1), defaultShader(defaultShader), color(color){

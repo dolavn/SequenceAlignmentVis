@@ -294,7 +294,7 @@ void Aligner::restoreAlignment(IndexArray optLocation) {
 	int maxDiff = findMaxDiff(start, curr);
 	cout << curr << endl;
 	cout << start << endl;
-	for (unsigned int i = 0; i < start.getDimensions(); ++i) {
+	for (int i = 0; i < start.getDimensions(); ++i) {
 		int spaceNum = maxDiff - (start[i] - curr[i]);
 		while (spaceNum) { *(currAlignment[i]--) = '_'; spaceNum--; }
 		while (start[i] > curr[i]) {
@@ -311,7 +311,7 @@ void Aligner::restoreAlignment(IndexArray optLocation) {
 	}
 	start.resetIndex();
 	maxDiff = findMaxDiff(curr, start);
-	for (unsigned int i = 0; i < curr.getDimensions(); ++i) {
+	for (int i = 0; i < curr.getDimensions(); ++i) {
 		int spaceNum = maxDiff-curr[i];
 		while (spaceNum) { *(currAlignment[i]--) = '_'; spaceNum--; }
 		while (curr[i] > 0) {

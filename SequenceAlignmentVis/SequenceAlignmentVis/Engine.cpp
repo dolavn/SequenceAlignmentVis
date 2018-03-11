@@ -69,7 +69,7 @@ void Engine::run() {
 
 void Engine::showAlert(string title, string text) {
 	if (currScene == nullptr) { return; }
-	UI::Messagebox m(vec3(0.8f, 0.2f, 0.2f), vec3(0.0f, 0.0f, 0.0f), 6.0f, 8.0f, 1.0f, 1.0f, title, text, *this);
+	UI::Messagebox m(vec3(0.8f, 0.2f, 0.2f), vec3(0.0f, 0.0f, 0.0f),1.0f, 1.0f, title, text, *this);
 	m.setOnDismiss([](Engine& e) {e.cont(); });
 	int ind = currScene->addObject(&m);
 	currScene->setSelectedObj(&(currScene->getObject(ind)));

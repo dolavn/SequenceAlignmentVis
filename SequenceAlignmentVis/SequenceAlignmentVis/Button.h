@@ -6,7 +6,7 @@
 #ifndef BUTTON_H_
 #define BUTTON_H_
 
-#include "Object.h"
+#include "Drawable.h"
 #include <functional>
 #include "Engine.h"
 #include "Text.h"

@@ -1,10 +1,10 @@
 /****************************************/
-/* Object.h                             */
+/* Drawable.h                           */
 /* Copyright (c) Dolav Nitay            */
 /****************************************/
 
-#ifndef CUBE_H_
-#define CUBE_H_
+#ifndef DRAWABLE_H_
+#define DRAWABLE_H_
 
 
 #include "glm\glm.hpp"
