@@ -30,11 +30,12 @@ public:
 	virtual void onKeyClick(int key) = 0;
 
 	
-
 	inline void setId(int id) { this->id = id; }
 	inline void setLocation(glm::vec3 location) { this->location = location; updateModelMatrix(); }
 	inline void setRotate(glm::vec3 axis, float deg) { this->rotate = glm::rotate(rotate, deg, axis); updateModelMatrix();  }
 	inline void setRotate(glm::mat4 rotationMatrix) { this->rotate = rotationMatrix; updateModelMatrix(); }
+	void setRotateAroundPoint(glm::vec3 axis, float deg, glm::vec3 point);
+	void setRotateAroundPoint(glm::mat4 rotationMatrix, glm::vec3 point);
 	inline void setScale(glm::vec3 scale) { this->scale = scale; updateModelMatrix(); }
 	inline void setColor(glm::vec3 color) { this->color = color; }
 	inline Shader& getDefaultShader() { return defaultShader; }

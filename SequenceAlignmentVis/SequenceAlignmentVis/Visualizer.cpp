@@ -94,7 +94,7 @@ void Visualizer::fillCell(IndexArray ind) {
 
 void Visualizer::finish() {
 	markSolution(maxFunc(*(alignerptr->table)));
-	engine.showAlert("Alignment finished!","");
+	engine.showAlert("","Alignment finished!");
 	finished = true;
 }
 

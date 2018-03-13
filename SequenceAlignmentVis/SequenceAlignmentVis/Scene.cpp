@@ -5,6 +5,7 @@
 
 #include "Scene.h"
 #include "Button.h"
+#include <glm/gtc/type_ptr.hpp>
 using namespace std;
 using namespace glm;
 
@@ -181,11 +182,8 @@ void Scene::removeDrawable(int ind) {
 }
 
 DrawableObject& Scene::getObject(int ind) {
-	bool shouldLock = lockingThread != std::this_thread::get_id();
-	if (shouldLock) { mtx.lock(); }
 	vector<DrawableObject*>& list = ind >= 0 ? objects : textObjects;
 	int corrInd = ind >= 0 ? ind : -ind - 1;
-	if (shouldLock) { mtx.unlock(); }
 	return *list[corrInd];
 }
 
@@ -338,6 +336,16 @@ void VisualizationScene::moveCamera(float dx,float dy) {
 	glm::vec3 currLoc = cameraLocation;
 	currLoc = currLoc + diff;
 	cameraLocation = currLoc;
+}
+
+mat4 VisualizationScene::getRotationMatrix() {
+	float matPtr[16];
+	matPtr[0] = cameraRight.x; matPtr[1] = cameraRight.y; matPtr[2] = cameraRight.z; matPtr[3] = 0.0f;
+	matPtr[4] = cameraUp.x; matPtr[5] = cameraUp.y; matPtr[6] = cameraUp.z; matPtr[7] = 0.0f;
+	matPtr[8] = cameraForward.x; matPtr[9] = cameraForward.y; matPtr[10] = cameraForward.z; matPtr[11] = 0.0f;
+	matPtr[12] = 0.0f; matPtr[13] = 0.0f; matPtr[14] = 0.0f; matPtr[15] = 1.0f;
+	mat4 ans = glm::make_mat4(matPtr);
+	return ans;
 }
 
 void Menu::addButton(float x, float y, float width, float height, string text, function<void(Engine& engine)> action) {

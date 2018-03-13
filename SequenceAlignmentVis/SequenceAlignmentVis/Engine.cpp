@@ -11,6 +11,13 @@
 using namespace glm;
 using namespace std;
 
+const vec3 RED_COLOR = vec3(0.8f, 0.2f, 0.2f);
+const vec3 BLACK_COLOR = vec3(0.0f, 0.0f, 0.0f);
+
+const float MESSAGE_BOX_DIST = 2.0f;
+const float MESSAGE_TITLE_SIZE = 0.22f;
+const float MESSAGE_TEXT_SIZE = 0.20f;
+
 Engine::Engine(int width,int height,std::string title):d(width,height,title){
 	setupShaders();
 	glfwSetCursorPosCallback(d.m_window, mouseMoveCallBack);
@@ -18,6 +25,7 @@ Engine::Engine(int width,int height,std::string title):d(width,height,title){
 	glfwSetScrollCallback(d.m_window, scrollCallback);
 	glfwSetKeyCallback(d.m_window, key_callback);
 	inputScene = currScene;
+	engineRunning = &runAdditionalFunctions;
 }
 
 Engine::~Engine() {
@@ -38,7 +46,7 @@ void Engine::run() {
 		Sleep(3);
 		mtx.lock();
 		callAdditionalFunctions();
-		if (glfwGetMouseButton(d.m_window, GLFW_MOUSE_BUTTON_LEFT)) {
+		if (mouse.pressed==LEFT_BUTTON) {
 			d.Clear(0.0f, 0.0f, 0.0f, 1.0f);
 			currScene->drawScenePicking();
 			unsigned char data[4];
@@ -69,7 +77,12 @@ void Engine::run() {
 
 void Engine::showAlert(string title, string text) {
 	if (currScene == nullptr) { return; }
-	UI::Messagebox m(vec3(0.8f, 0.2f, 0.2f), vec3(0.0f, 0.0f, 0.0f),1.0f, 1.0f, title, text, *this);
+	vec3 cameraLocation = currScene->getCameraLocation();
+	vec3 cameraForward = currScene->getCameraForward();
+	cameraForward = normalize(cameraForward);
+	vec3 messageBoxLocation = cameraLocation + MESSAGE_BOX_DIST*cameraForward;
+	UI::Messagebox m(RED_COLOR,BLACK_COLOR, MESSAGE_TITLE_SIZE, MESSAGE_TEXT_SIZE,messageBoxLocation, title, text, *this);
+	m.setRotate(currScene->getRotationMatrix());
 	m.setOnDismiss([](Engine& e) {e.cont(); });
 	int ind = currScene->addObject(&m);
 	currScene->setSelectedObj(&(currScene->getObject(ind)));
@@ -90,6 +103,8 @@ void Engine::changeScene(Scene* newScene) {
 	}
 	//clearScene();
 	newScene->setShaders(shader, pickingShader, textShader);
+	shader->setLightDirection(newScene->getCameraForward());
+	mouse.pressed = NO_BUTTON;
 	inputScene = newScene;
 	currScene = newScene;
 	if (drawingThread != std::this_thread::get_id()) {

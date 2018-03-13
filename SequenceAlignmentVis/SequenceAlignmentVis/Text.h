@@ -26,7 +26,7 @@ public:
 	Text(const Text& other);
 	~Text();
 	void draw(Shader* shader, glm::mat4 VP);
-	void setZOffset(float offset) { this->zOffset = offset; }
+	void setZOffset(float offset) { this->zOffset = offset; clear(); init(); }
 	void onClick(){}
 	void onRelease(){}
 	void onKeyClick(int key){}

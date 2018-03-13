@@ -17,7 +17,8 @@ class Engine;
 namespace UI {
 	class Messagebox :public DrawableObject {
 	public:
-		Messagebox(glm::vec3 color, glm::vec3 textColor, float x, float y, std::string title, std::string text, Engine& e);
+		Messagebox(glm::vec3 color, glm::vec3 textColor, glm::vec3 location,std::string title, std::string text, Engine& e);
+		Messagebox(glm::vec3 color, glm::vec3 textColor, float titleSize, float textSize, glm::vec3 location, std::string title, std::string text, Engine& e);
 		Messagebox(const Messagebox& other);
 		virtual ~Messagebox();
 
@@ -28,6 +29,8 @@ namespace UI {
 		void onKeyClick(int key);
 		
 		void setOnDismiss(std::function<void(Engine&)> callback) { onDismiss = callback; }
+	protected:
+		virtual void updateModelMatrix();
 	private:
 		void calcDimensions(std::string text);
 		void setupText(std::string title, std::string text);
@@ -35,9 +38,12 @@ namespace UI {
 		void copyText(const Messagebox& other);
 		void clear();
 		void move(float dx, float dy);
-		float width, height, x, y;
+		inline float calcTextSizeX();
+		inline float getTitleOffset();
+		float width, height;
+		float textSize, titleSize;
 		std::string titleStr, textStr;
-		glm::vec3 textColor;
+		glm::vec3 textColor, location;
 		Engine& e;
 		Shader& textShader;
 		Mesh* mesh;

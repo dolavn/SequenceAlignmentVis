@@ -7,32 +7,32 @@
 #include "Engine.h"
 #include <iostream>
 
-const float Z_COORDINATE = 4.0f;
-const float TITLE_SIZE_FACTOR = 1.6f;
-const float TEXT_SIZE_FACTOR = 0.8f;
-const float MAX_TEXT_SIZE = 2.0f;
-const float MAX_TITLE_SIZE = 3.0f;
-const float WIDTH_HEIGHT_RARIO = 1.61803f;
 const int LETTERS_PER_LINE = 12;
 const float Z_OFFSET = -0.1f;
 const float MOVE_DIST = 0.2f;
-const float TITLE_SIZE = 2.0f;
-const float TEXT_SIZE = 1.5f;
-const float SIZE_X = TEXT_SIZE*CHAR_SIZE_X / CHAR_SIZE_Y;
-const float TITLE_OFFSET = 0.5*TITLE_SIZE;
+const float DEFAULT_TITLE_SIZE = 2.0f;
+const float DEFAULT_TEXT_SIZE = 1.5f;
+const float TITLE_OFFSET_MULTIPLIER = 0.5f;
 
 using namespace glm;
 using namespace std;
 
 namespace UI {
-	Messagebox::Messagebox(vec3 color, vec3 textColor,float x, float y, string title, string text, Engine& e) : DrawableObject(e.getShader(), color), textShader(e.getTextShader()), textColor(textColor), x(x), y(y),e(e),titleStr(title),textStr(text){
+	Messagebox::Messagebox(vec3 color, vec3 textColor,vec3 location, string title, string text, Engine& e) : DrawableObject(e.getShader(), color), textShader(e.getTextShader()), textColor(textColor), location(location),e(e),titleStr(title),textStr(text),textSize(DEFAULT_TEXT_SIZE),titleSize(DEFAULT_TITLE_SIZE){
 		calcDimensions(text);
 		setupText(title, text);
 		createMesh();
-		setLocation(vec3(x, y, Z_COORDINATE));
+		setLocation(location);
 	}
 
-	Messagebox::Messagebox(const Messagebox& other) : DrawableObject(other), textShader(other.textShader), textColor(other.textColor), width(other.width), height(other.height), x(other.x), y(other.y),onDismiss(other.onDismiss),e(other.e),titleStr(other.titleStr),textStr(other.textStr){
+	Messagebox::Messagebox(vec3 color, vec3 textColor, float titleSize, float textSize, vec3 location, string title, string text, Engine& e) :DrawableObject(e.getShader(), color), textShader(e.getTextShader()), textColor(textColor), location(location), e(e), titleStr(title), textStr(text), textSize(textSize), titleSize(titleSize) {
+		calcDimensions(text);
+		setupText(title, text);
+		createMesh();
+		setLocation(location);
+	}
+
+	Messagebox::Messagebox(const Messagebox& other) : DrawableObject(other), textShader(other.textShader), textColor(other.textColor), width(other.width), height(other.height), location(other.location),onDismiss(other.onDismiss),e(other.e),titleStr(other.titleStr),textStr(other.textStr),textSize(other.textSize),titleSize(other.titleSize){
 		copyText(other);
 		createMesh();
 	}
@@ -59,7 +59,6 @@ namespace UI {
 		if (mesh != nullptr) {
 			mesh->Draw();
 		}
-
 	}
 
 	DrawableObject* Messagebox::clone() {
@@ -81,6 +80,9 @@ namespace UI {
 		if (key == GLFW_KEY_LEFT) { dx = MOVE_DIST; }
 		if (key == GLFW_KEY_UP) { dy = MOVE_DIST; }
 		if (key == GLFW_KEY_DOWN) { dy = -MOVE_DIST; }
+		if (key == GLFW_KEY_A) {
+			setRotate(glm::vec3(0, 1, 0), 5.0f);
+		}
 		move(dx, dy);
 	}
 
@@ -88,46 +90,66 @@ namespace UI {
 		int numLetters = text.size();
 		int numLines = numLetters / LETTERS_PER_LINE;
 		if (numLetters%LETTERS_PER_LINE != 0) { numLines++; }
-		width = min(LETTERS_PER_LINE, (int)text.size())*TEXT_SIZE*(CHAR_SIZE_X / CHAR_SIZE_Y);
-		height = numLines *TEXT_SIZE+TITLE_SIZE+TITLE_OFFSET;
+		width = min(LETTERS_PER_LINE, (int)text.size())*textSize*(CHAR_SIZE_X / CHAR_SIZE_Y);
+		height = numLines *textSize+titleSize+getTitleOffset();
+		cout << text << endl;
 	}
 
 	void Messagebox::setupText(string title, string text) {
-		vec3 titleLocation(x+width/2-SIZE_X, y + height / 2- TITLE_OFFSET, Z_COORDINATE);
-		this->title = new Text(titleLocation, textColor, TITLE_SIZE, title, textShader);
+		float textSizeX = calcTextSizeX();
+		float x = location.x, y = location.y, z = location.z;
+		vec3 titleLocation(x+width/2- textSizeX, y + height / 2- getTitleOffset(), z);
+		this->title = new Text(titleLocation, textColor, titleSize, title, textShader);
 		this->title->setZOffset(Z_OFFSET);
 		titleInd = -1;
-		float currY = height / 2.0f - 1.5f * TITLE_SIZE;
+		float currY = height / 2.0f - 1.5f * titleSize;
 		int lettersRemaining = LETTERS_PER_LINE;
-		const float INIT_X = width / 2 - SIZE_X;
+		const float INIT_X = width / 2 - textSizeX;
 		float currX = INIT_X;
 		vector<string> words = splitString(text, ' ');
 		for (unsigned int i = 0; i < words.size();++i){
 			string currStr = words[i];
 			if ((int)(currStr.size()+1) > lettersRemaining) {
-				currY = currY - TEXT_SIZE;
+				currY = currY - textSize;
 				lettersRemaining = LETTERS_PER_LINE;
 				currX = INIT_X;
 			}
-			vec3 textLocation(currX+x, currY+y, Z_COORDINATE);
-			this->text.push_back(new Text(textLocation, textColor, TEXT_SIZE, currStr, textShader));
+			vec3 textLocation(currX+x, currY+y, z);
+			this->text.push_back(new Text(textLocation, textColor, textSize, currStr, textShader));
 			this->text[this->text.size() - 1]->setZOffset(Z_OFFSET);
 			this->textInd.push_back(-1);
 			this->textLocations.push_back(vec2(currX, currY));
 			lettersRemaining = lettersRemaining - currStr.size()-1;
-			currX = currX - SIZE_X*(currStr.size()+1);
+			currX = currX - textSizeX*(currStr.size()+1);
+		}
+	}
+
+	void Messagebox::updateModelMatrix() {
+		DrawableObject::updateModelMatrix();
+		title->setRotateAroundPoint(rotate, location);
+		if (titleInd != -1) {
+			scn->getObject(titleInd).setRotateAroundPoint(rotate,location);
+		}
+		for (unsigned int i = 0; i < text.size(); ++i) {
+			text[i]->setRotateAroundPoint(rotate, location);
+			if (textInd[i] != -1) {
+				scn->getObject(textInd[i]).setRotateAroundPoint(rotate,location);
+			}
 		}
 	}
 
 	void Messagebox::move(float dx, float dy) {
+		float textSizeX = calcTextSizeX();
+		float x = location.x, y = location.y,z=location.z;
 		x = x + dx;
 		y = y + dy;
-		setLocation(vec3(x,y,Z_COORDINATE));
-		scn->getObject(titleInd).setLocation(vec3(x + width / 2 - SIZE_X, y + height / 2 - TITLE_OFFSET,Z_COORDINATE));
+		setLocation(vec3(x,y,z));
+		scn->getObject(titleInd).setLocation(vec3(x + width / 2 - textSizeX, y + height / 2 - getTitleOffset(),z));
 		for (unsigned int i = 0; i < text.size(); ++i) {
 			vec2 textOffset = textLocations[i];
-			scn->getObject(textInd[i]).setLocation(vec3(x + textOffset.x, y + textOffset.y, Z_COORDINATE));
+			scn->getObject(textInd[i]).setLocation(vec3(x + textOffset.x, y + textOffset.y, z));
 		}
+		location = vec3(x, y, location.z);
 	}
 
 	void Messagebox::createMesh() {
@@ -179,6 +201,14 @@ namespace UI {
 		text.clear();
 		textInd.clear();
 		textLocations.clear();
+	}
+
+	float Messagebox::calcTextSizeX() {
+		return textSize*CHAR_SIZE_X / CHAR_SIZE_Y;
+	}
+
+	float Messagebox::getTitleOffset() {
+		return TITLE_OFFSET_MULTIPLIER*titleSize;
 	}
 
 }

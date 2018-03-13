@@ -26,10 +26,12 @@ public:
 	Scene(const Scene& other);
 	virtual ~Scene();
 
-	virtual void rotateCamera(float dx, float dy,glm::vec3 location) = 0;
+	virtual void rotateCamera(float dx, float dy, glm::vec3 location) = 0;
 	virtual void zoomCamera(float z) = 0;
 	virtual void moveCamera(float dx, float dy) = 0;
 	virtual Scene* clone() = 0;
+	virtual glm::mat4 getRotationMatrix() = 0;
+
 	void setShaders(Shader* shader, Shader* pickingShader, Shader* textShader) {
 		this->shader = shader; this->pickingShader = pickingShader; this->textShader = textShader;
 	}
@@ -46,6 +48,10 @@ public:
 
 	Shader& getShader() { return *shader; }
 	Shader& getTextShader() { return *textShader; }
+
+	inline glm::vec3 getCameraLocation() { return cameraLocation; }
+	inline glm::vec3 getCameraForward() { return cameraForward; }
+	inline glm::vec3 getCameraUp() { return cameraUp; }
 protected:
 	mutable std::mutex mtx;
 	std::thread::id lockingThread;
@@ -93,6 +99,8 @@ public:
 	void rotateCamera(float dx, float dy,glm::vec3 location);
 	void zoomCamera(float z);
 	void moveCamera(float dx, float dy);
+	glm::mat4 getRotationMatrix();
+
 	Scene* clone() {
 		return new VisualizationScene(*this);
 	}
@@ -117,6 +125,8 @@ public:
 	void rotateCamera(float dx,float dy,glm::vec3 location){}
 	void zoomCamera(float z){}
 	void moveCamera(float dx,float dy){}
+	glm::mat4 getRotationMatrix() { return glm::mat4(1); }
+
 	Scene* clone() {
 		return new Menu(*this);
 	}

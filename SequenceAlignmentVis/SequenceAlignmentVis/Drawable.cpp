@@ -6,11 +6,13 @@
 #include "Drawable.h"
 #include "Scene.h"
 
-DrawableObject::DrawableObject(Shader& defaultShader, glm::vec3 color) :id(-1), defaultShader(defaultShader), color(color){
+using namespace glm;
+
+DrawableObject::DrawableObject(Shader& defaultShader, vec3 color) :id(-1), defaultShader(defaultShader), color(color){
 
 }
 
-glm::vec3 DrawableObject::getIdVec() {
+vec3 DrawableObject::getIdVec() {
 	int tempId = getId()+1;
 	int ri = tempId % 256;
 	tempId = tempId / 256;
@@ -20,10 +22,22 @@ glm::vec3 DrawableObject::getIdVec() {
 	float r = (float)ri / 255.0f;
 	float g = (float)gi / 255.0f;
 	float b = (float)bi / 255.0f;
-	return glm::vec3(r, g, b);
+	return vec3(r, g, b);
 }
 
-Object3D::Object3D(glm::vec3 color,Mesh* mesh,Shader& shader):DrawableObject(shader,color),tex(nullptr),mesh(mesh){
+void DrawableObject::setRotateAroundPoint(vec3 axis, float deg, vec3 point) {
+	mat4 rotateMat = glm::rotate(deg, axis);
+	setRotateAroundPoint(rotateMat, point);
+}
+
+void DrawableObject::setRotateAroundPoint(mat4 rotateMat, vec3 point) {
+	mat4 translateMat = translate(point-location);
+	mat4 invTranslateMat = translate(location-point);
+	rotate = translateMat*rotateMat*invTranslateMat;
+	updateModelMatrix();
+}
+
+Object3D::Object3D(vec3 color,Mesh* mesh,Shader& shader):DrawableObject(shader,color),tex(nullptr),mesh(mesh){
 }
 
 Object3D::Object3D(const Object3D& other):DrawableObject(other),tex(other.tex),mesh(other.mesh){
