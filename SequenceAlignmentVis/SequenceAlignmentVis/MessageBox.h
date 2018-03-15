@@ -32,7 +32,7 @@ namespace UI {
 	protected:
 		virtual void updateModelMatrix();
 	private:
-		void calcDimensions(std::string text);
+		void calcDimensions(std::string text,std::string title);
 		void setupText(std::string title, std::string text);
 		void createMesh();
 		void copyText(const Messagebox& other);

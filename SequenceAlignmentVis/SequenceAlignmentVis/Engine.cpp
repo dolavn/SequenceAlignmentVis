@@ -12,6 +12,7 @@ using namespace glm;
 using namespace std;
 
 const vec3 RED_COLOR = vec3(0.8f, 0.2f, 0.2f);
+const vec3 BLUE_COLOR = vec3(0.2f, 0.2f, 0.8f);
 const vec3 BLACK_COLOR = vec3(0.0f, 0.0f, 0.0f);
 
 const float MESSAGE_BOX_DIST = 2.0f;
@@ -25,11 +26,11 @@ Engine::Engine(int width,int height,std::string title):d(width,height,title){
 	glfwSetScrollCallback(d.m_window, scrollCallback);
 	glfwSetKeyCallback(d.m_window, key_callback);
 	inputScene = currScene;
-	engineRunning = &runAdditionalFunctions;
+	engineCanMoveCamera = &canMoveCamera;
 }
 
 Engine::~Engine() {
-	clearScene();
+	clearScenes();
 	clearShaders();
 }
 
@@ -55,6 +56,7 @@ void Engine::run() {
 			DrawableObject* selObj = currScene->getSelectedObj();
 			if (ind >= 0) {
 				if (selObj != nullptr && selObj->getId()!=ind) { 
+					printf("ind:%d\nselObj->getId():%d\n", ind, selObj->getId());
 					selObj->onRelease(); 
 				}
 				currScene->getObject(ind).onClick();
@@ -75,33 +77,62 @@ void Engine::run() {
 	}
 }
 
+int Engine::addScene(Scene* newScene) {
+	scenesList.push_back(newScene);
+	return scenesList.size() - 1;
+}
+
+void Engine::removeScene(int sceneInd) {
+	if (scenesList[sceneInd] != nullptr) {
+		delete(scenesList[sceneInd]);
+		scenesList[sceneInd] = nullptr;
+	}
+}
+
 void Engine::showAlert(string title, string text) {
 	if (currScene == nullptr) { return; }
+	UI::Messagebox m = createMessagebox(title, text, RED_COLOR);
+	m.setOnDismiss([](Engine& e) {e.canMoveCamera = true;  e.cont(); });
+	int ind = currScene->addObject(&m);
+	currScene->setSelectedObj(&(currScene->getObject(ind)));
+	canMoveCamera = false;
+	halt();
+}
+
+void Engine::showNotification(string title, string text) {
+	if (currScene == nullptr) { return; }
+	UI::Messagebox m = createMessagebox(title, text, BLUE_COLOR);
+	m.setOnDismiss([](Engine& e) {e.canMoveCamera = true; });
+	int ind = currScene->addObject(&m);
+	currScene->setSelectedObj(&(currScene->getObject(ind)));
+	canMoveCamera = false;
+}
+
+UI::Messagebox Engine::createMessagebox(string title, string text, vec3 color) {
 	vec3 cameraLocation = currScene->getCameraLocation();
 	vec3 cameraForward = currScene->getCameraForward();
 	cameraForward = normalize(cameraForward);
 	vec3 messageBoxLocation = cameraLocation + MESSAGE_BOX_DIST*cameraForward;
-	UI::Messagebox m(RED_COLOR,BLACK_COLOR, MESSAGE_TITLE_SIZE, MESSAGE_TEXT_SIZE,messageBoxLocation, title, text, *this);
+	UI::Messagebox m(color, BLACK_COLOR, MESSAGE_TITLE_SIZE, MESSAGE_TEXT_SIZE, messageBoxLocation, title, text, *this);
 	m.setRotate(currScene->getRotationMatrix());
-	m.setOnDismiss([](Engine& e) {e.cont(); });
-	int ind = currScene->addObject(&m);
-	currScene->setSelectedObj(&(currScene->getObject(ind)));
-	halt();
+	return m;
 }
 
-void Engine::clearScene() {
-	if (currScene != nullptr) {
-		delete(currScene);
-		currScene = nullptr;
+void Engine::clearScenes() {
+	for (unsigned int i = 0; i < scenesList.size(); ++i) {
+		if (scenesList[i] != nullptr) {
+			delete(scenesList[i]);
+			scenesList[i] = nullptr;
+		}
 	}
-	clearAdditionalFunctions();
 }
 
-void Engine::changeScene(Scene* newScene) {
+void Engine::changeScene(int sceneInd) {
 	if (drawingThread != std::this_thread::get_id()) {
 		mtx.lock();
 	}
 	//clearScene();
+	Scene* newScene = scenesList[sceneInd];
 	newScene->setShaders(shader, pickingShader, textShader);
 	shader->setLightDirection(newScene->getCameraForward());
 	mouse.pressed = NO_BUTTON;
@@ -132,6 +163,7 @@ void Engine::setupShaders() {
 	shader = new Shader(SHADER_PATH);
 	pickingShader = new Shader(PICKING_SHADER_PATH);
 	textShader = new Shader(TEXT_SHADER_PATH);
+	UIShader = new Shader(UI_SHADER_PATH);
 }
 
 void Engine::clearShaders() {
@@ -146,6 +178,10 @@ void Engine::clearShaders() {
 	if (textShader != nullptr) {
 		delete(textShader);
 		textShader = nullptr;
+	}
+	if (UIShader != nullptr) {
+		delete(UIShader);
+		UIShader = nullptr;
 	}
 }
 

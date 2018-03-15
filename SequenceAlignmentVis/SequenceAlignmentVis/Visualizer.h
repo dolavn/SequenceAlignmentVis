@@ -18,10 +18,12 @@ public:
 	inline Scene* getScene() { return scene; }
 	inline bool isFinished() { return finished; }
 
+	int getSceneInd() { return sceneInd; }
+	void addScene() { sceneInd = engine.addScene(scene); }
 	void globalAlignmentInit();
 	void freeEndsInit();
 	void localAlignmentInit();
-	void setPrevScene(Scene* prevScene) { this->prevScene = prevScene; }
+	void setPrevScene(int prevSceneInd) { this->prevSceneInd = prevSceneInd; }
 	void step();
 private:
 	bool stop = false;
@@ -44,8 +46,9 @@ private:
 	Aligner* alignerptr;
 	Engine& engine;
 	FullDPTable* sceneTable;
-	Scene* prevScene;
+	int prevSceneInd;
 	Scene* scene;
+	int sceneInd;
 };
 
 #endif

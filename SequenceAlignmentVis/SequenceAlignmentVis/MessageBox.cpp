@@ -7,26 +7,27 @@
 #include "Engine.h"
 #include <iostream>
 
-const int LETTERS_PER_LINE = 12;
+const int LETTERS_PER_LINE = 15;
 const float Z_OFFSET = -0.1f;
 const float MOVE_DIST = 0.2f;
 const float DEFAULT_TITLE_SIZE = 2.0f;
 const float DEFAULT_TEXT_SIZE = 1.5f;
 const float TITLE_OFFSET_MULTIPLIER = 0.5f;
+const float BORDER_MULTIPLIER = 0.1f;
 
 using namespace glm;
 using namespace std;
 
 namespace UI {
-	Messagebox::Messagebox(vec3 color, vec3 textColor,vec3 location, string title, string text, Engine& e) : DrawableObject(e.getShader(), color), textShader(e.getTextShader()), textColor(textColor), location(location),e(e),titleStr(title),textStr(text),textSize(DEFAULT_TEXT_SIZE),titleSize(DEFAULT_TITLE_SIZE){
-		calcDimensions(text);
+	Messagebox::Messagebox(vec3 color, vec3 textColor,vec3 location, string title, string text, Engine& e) : DrawableObject(e.getUIShader(), color), textShader(e.getTextShader()), textColor(textColor), location(location),e(e),titleStr(title),textStr(text),textSize(DEFAULT_TEXT_SIZE),titleSize(DEFAULT_TITLE_SIZE){
+		calcDimensions(text,title);
 		setupText(title, text);
 		createMesh();
 		setLocation(location);
 	}
 
-	Messagebox::Messagebox(vec3 color, vec3 textColor, float titleSize, float textSize, vec3 location, string title, string text, Engine& e) :DrawableObject(e.getShader(), color), textShader(e.getTextShader()), textColor(textColor), location(location), e(e), titleStr(title), textStr(text), textSize(textSize), titleSize(titleSize) {
-		calcDimensions(text);
+	Messagebox::Messagebox(vec3 color, vec3 textColor, float titleSize, float textSize, vec3 location, string title, string text, Engine& e) :DrawableObject(e.getUIShader(), color), textShader(e.getTextShader()), textColor(textColor), location(location), e(e), titleStr(title), textStr(text), textSize(textSize), titleSize(titleSize) {
+		calcDimensions(text,title);
 		setupText(title, text);
 		createMesh();
 		setLocation(location);
@@ -86,13 +87,12 @@ namespace UI {
 		move(dx, dy);
 	}
 
-	void Messagebox::calcDimensions(string text) {
+	void Messagebox::calcDimensions(string text,string title) {
 		int numLetters = text.size();
 		int numLines = numLetters / LETTERS_PER_LINE;
 		if (numLetters%LETTERS_PER_LINE != 0) { numLines++; }
 		width = min(LETTERS_PER_LINE, (int)text.size())*textSize*(CHAR_SIZE_X / CHAR_SIZE_Y);
 		height = numLines *textSize+titleSize+getTitleOffset();
-		cout << text << endl;
 	}
 
 	void Messagebox::setupText(string title, string text) {
@@ -102,7 +102,7 @@ namespace UI {
 		this->title = new Text(titleLocation, textColor, titleSize, title, textShader);
 		this->title->setZOffset(Z_OFFSET);
 		titleInd = -1;
-		float currY = height / 2.0f - 1.5f * titleSize;
+		float currY = height / 2.0f - titleSize -getTitleOffset();
 		int lettersRemaining = LETTERS_PER_LINE;
 		const float INIT_X = width / 2 - textSizeX;
 		float currX = INIT_X;

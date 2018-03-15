@@ -5,6 +5,7 @@
 
 #include "Scene.h"
 #include "Button.h"
+#include "Visualizer.h"
 #include <glm/gtc/type_ptr.hpp>
 using namespace std;
 using namespace glm;
@@ -303,6 +304,12 @@ void Scene::clear() {
 			delete(textObjects[i]);
 			textObjects[i] = nullptr;
 		}
+	}
+}
+
+VisualizationScene::~VisualizationScene() {
+	if (vis != nullptr) {
+		delete(vis);
 	}
 }
 

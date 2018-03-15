@@ -23,7 +23,7 @@ public:
 	void onKeyClick(int key);
 
 	std::string getText() { return str; }
-	void changeText(std::string str) { clearText(); createText(str); }
+	void changeText(std::string str) { clearText(); this->str = str; createText(str); }
 private:
 	void createMesh();
 	void createText(std::string str);

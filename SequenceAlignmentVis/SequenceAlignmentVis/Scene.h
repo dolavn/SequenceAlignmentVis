@@ -19,6 +19,7 @@
 #include <glm/gtx/transform.hpp>
 
 class Engine;
+class Visualizer;
 
 class Scene {
 public:
@@ -94,8 +95,9 @@ public:
 	VisualizationScene(const VisualizationScene& other) :Scene(other){
 
 	}
-	virtual ~VisualizationScene(){}
+	virtual ~VisualizationScene();
 
+	void setVisualizer(Visualizer* vis) {this->vis = vis;}
 	void rotateCamera(float dx, float dy,glm::vec3 location);
 	void zoomCamera(float z);
 	void moveCamera(float dx, float dy);
@@ -105,6 +107,7 @@ public:
 		return new VisualizationScene(*this);
 	}
 private:
+	Visualizer* vis;
 	glm::vec3 cameraRight;
 };
 
@@ -127,11 +130,25 @@ public:
 	void moveCamera(float dx,float dy){}
 	glm::mat4 getRotationMatrix() { return glm::mat4(1); }
 
-	Scene* clone() {
+	virtual Scene* clone() {
 		return new Menu(*this);
 	}
 private:
 	Engine& engine;
+};
+
+template <class T>
+class SettingsScene :public Menu {
+public:
+	SettingsScene(Display& display,Engine& engine):Menu(display,engine){}
+	SettingsScene(const SettingsScene& other):Menu(other){}
+
+	void setHeldObject(T obj) { heldObject = obj; }
+	T getHeldObject() { return heldObject; }
+
+	Scene* clone() { return new SettingsScene(*this); }
+private:
+	T heldObject;
 };
 
 #endif

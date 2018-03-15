@@ -33,11 +33,11 @@ Visualizer::Visualizer(Aligner& aligner, Engine& e,int delay) :delay(delay),alig
 	createScene();
 }
 
-Visualizer::Visualizer(const Visualizer& other) : delay(other.delay),alignerptr(other.alignerptr), engine(other.engine) {
+Visualizer::Visualizer(const Visualizer& other) : delay(other.delay),alignerptr(other.alignerptr), engine(other.engine),stepFunc(other.stepFunc),maxFunc(other.maxFunc){
+	scene = other.scene;
 	if (other.scene != nullptr) {
 		scene = other.scene->clone();
 	}
-	scene = other.scene;
 }
 
 Visualizer::~Visualizer() {
@@ -94,7 +94,7 @@ void Visualizer::fillCell(IndexArray ind) {
 
 void Visualizer::finish() {
 	markSolution(maxFunc(*(alignerptr->table)));
-	engine.showAlert("","Alignment finished!");
+	engine.showNotification("","Alignment finished!");
 	finished = true;
 }
 
@@ -123,14 +123,17 @@ void Visualizer::step() {
 }
 
 bool Visualizer::createScene() {
-	scene = new VisualizationScene(engine.getDisplay());
+	VisualizationScene* visScene = new VisualizationScene(engine.getDisplay());
+	visScene->setVisualizer(this);
+	scene = visScene;
 	auto func = [this](Engine& e) {
 		stop = !stop;
 	};
 	Button b(GREEN_COLOR, 2.0f, 8.0f, 2.0f, 1.0f, "Stop", scene->getCubeMesh(),engine, func);
 	Button exit(RED_COLOR, 8.0f, 8.0f, 2.0f, 1.0f, "Exit", scene->getCubeMesh(), engine, [this](Engine& e) {
-		e.changeScene(prevScene);
-		delete(this);
+		e.changeScene(prevSceneInd);
+		scene = nullptr;
+		e.removeScene(sceneInd);
 	});
 	scene->addObject(&b);
 	scene->addObject(&exit);
