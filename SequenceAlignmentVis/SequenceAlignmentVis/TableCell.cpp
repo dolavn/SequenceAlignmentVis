@@ -31,17 +31,21 @@ void TableCell::onKeyClick(int key) {
 }
 
 void TableCell::onClick() {
-
+	scn->setSelectedObj(this);
 }
 
 void TableCell::onRelease() {
 
 }
 
+void TableCell::onDrag(float dx, float dy) {
+
+}
+
 void TableCell::draw(Shader* shader, mat4 VP) {
 	updateModelMatrix();
 	if (txtInd == -1) {
-		txtInd = scn->addObject(text);
+		txtInd = scn->addObject(*text);
 	}
 	Shader& s = shader != nullptr ? *shader : defaultShader;
 	glm::mat4 MVP = VP*modelMatrix;
@@ -63,7 +67,7 @@ void TableCell::initText(string str) {
 	text = new Text(location, textColor, calcTextSize (str),-CUBE_SIZE/2, str, textShader);
 	if (txtInd != -1) {
 		scn->removeDrawable(txtInd);
-		txtInd = scn->addObject(text);
+		txtInd = scn->addObject(*text);
 	}
 }
 

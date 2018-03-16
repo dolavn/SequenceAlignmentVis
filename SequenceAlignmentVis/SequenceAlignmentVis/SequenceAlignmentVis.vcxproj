@@ -129,6 +129,7 @@
     <ClInclude Include="IndexArray.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="obj_loader.h" />
+    <ClInclude Include="PointerList.h" />
     <ClInclude Include="RadioButton.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="Shader.h" />

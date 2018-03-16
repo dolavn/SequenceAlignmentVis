@@ -40,7 +40,7 @@ RadioButton<T>::~RadioButton() {
 template <class T>
 void RadioButton<T>::draw(Shader* shader, glm::mat4 VP) {
 	if (txtInd == -1) {
-		txtInd = scn->addObject(text);
+		txtInd = scn->addObject(*text);
 	}
 	Texture& texture = **activeTexture;
 	texture.setTexture();

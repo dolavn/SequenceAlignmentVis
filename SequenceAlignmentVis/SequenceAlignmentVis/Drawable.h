@@ -19,13 +19,14 @@ class Scene;
 class DrawableObject {
 public:
 	DrawableObject(Shader& defaultShader, glm::vec3 color);
-	DrawableObject(const DrawableObject& other) :defaultShader(other.defaultShader), color(other.color), location(other.location), rotate(other.rotate),scale(other.scale), modelMatrix(other.modelMatrix) {	}
+	DrawableObject(const DrawableObject& other) :defaultShader(other.defaultShader), color(other.color), location(other.location), rotate(other.rotate),scale(other.scale), modelMatrix(other.modelMatrix),scn(other.scn){	}
 	
 	virtual ~DrawableObject(){}
 
 	virtual void draw(Shader* shader, glm::mat4 vp) = 0;
 	virtual DrawableObject* clone() = 0;
 	virtual void onClick() = 0;
+	virtual void onDrag(float dx,float dy) = 0;
 	virtual void onRelease() = 0;
 	virtual void onKeyClick(int key) = 0;
 
@@ -40,6 +41,7 @@ public:
 	inline void setColor(glm::vec3 color) { this->color = color; }
 	inline Shader& getDefaultShader() { return defaultShader; }
 	inline int getId() { return id; }
+	inline glm::mat4 getModelMatrix() { return modelMatrix; }
 	inline glm::vec3 getLocation() { return location; }
 	void setScene(Scene* scn) { this->scn = scn; }
 protected:
@@ -65,6 +67,7 @@ public:
 	inline void setTexture(Texture* tex) { this->tex = tex; }
 	inline void resetTexture() { this->tex = nullptr; }
 
+	void onDrag(float dx, float dy) {}
 	void onClick();
 	void onRelease();
 	void onKeyClick(int key);

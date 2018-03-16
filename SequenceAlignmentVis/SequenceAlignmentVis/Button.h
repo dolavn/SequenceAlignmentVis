@@ -19,6 +19,7 @@ public:
 	void onClick();
 	void onRelease(){}
 	void onKeyClick(int key);
+	void onDrag(float dx, float dy){}
 	void draw(Shader* shader, glm::mat4 VP);
 	DrawableObject* clone();
 private:

@@ -52,6 +52,7 @@ mouseCursor mouse = mouseCursor();
 Scene* inputScene;
 DrawableObject* followCube;
 bool* engineCanMoveCamera;
+float distToObject;
 
 void mouseMoveCallBack(GLFWwindow* window, double xpos, double ypos) {
 	int width=0, height=0;
@@ -62,9 +63,12 @@ void mouseMoveCallBack(GLFWwindow* window, double xpos, double ypos) {
 	float x = (float)(mouse.xPos / (float)width) * 5;
 	float y = (float)(mouse.yPos / (float)height) * 5;
 	if (mouse.pressed == LEFT_BUTTON) {
-		if (!*engineCanMoveCamera) { return; }
 		if (inputScene->getSelectedObj() == nullptr) {
+			if (!*engineCanMoveCamera) { return; }
 			inputScene->rotateCamera(2*dx, 2*dy, glm::vec3(x,y,5));
+		}
+		else {
+			inputScene->getSelectedObj()->onDrag(dx, dy);
 		}
 	}
 	if (mouse.pressed == RIGHT_BUTTON) {

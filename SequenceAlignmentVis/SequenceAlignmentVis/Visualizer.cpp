@@ -135,8 +135,8 @@ bool Visualizer::createScene() {
 		scene = nullptr;
 		e.removeScene(sceneInd);
 	});
-	scene->addObject(&b);
-	scene->addObject(&exit);
+	scene->addObject(b);
+	scene->addObject(exit);
 	if (alignerptr->strings.size() < 2 || alignerptr->strings.size() > 3) { return false; }
 	if (alignerptr->strings.size() == 2) {
 		create2DScene();
@@ -155,7 +155,7 @@ void Visualizer::createStringRow(string str, vec3 rowDir,vec3 startPoint,vec3 ro
 		ss >> s;
 		TableCell cell(currLoc, BLUE_COLOR, BLACK_COLOR, s, scene->getCubeMesh(), engine.getShader(), engine.getTextShader());
 		if (rotateAxis!=vec3(0,0,0)) { cell.setRotate(rotateAxis, rotateDeg); }
-		scene->addObject(&cell);
+		scene->addObject(cell);
 		currLoc = currLoc + rowDir;
 	}
 }
@@ -171,7 +171,7 @@ void Visualizer::createTable(IndexArray ind, vec3 startPoint) {
 		vec3 location = startPoint - CUBE_SIZE*vec3(ind[1], ind[0], dim == 2 ? 0.0f : -ind[2]);
 		TableCell cell(location, GRAY_COLOR, BLACK_COLOR, "", scene->getCubeMesh(), engine.getShader(), engine.getTextShader());
 		c.setLocation(location);
-		tableRef[ind] = (float)(scene->addObject(&cell));
+		tableRef[ind] = (float)(scene->addObject(cell));
 	}
 }
 
@@ -180,7 +180,7 @@ void Visualizer::create2DScene() {
 	vec3 locationTop(INIT_X, INIT_Y, INIT_Z);
 	TableCell top(locationTop, BLUE_COLOR, BLACK_COLOR, "", scene->getCubeMesh(), engine.getShader(), engine.getTextShader());
 	top.setRotate(vec3(0, 1, 0),-90.0f);
-	scene->addObject(&top);
+	scene->addObject(top);
 	vec3 startPoint(INIT_X - CUBE_SIZE, INIT_Y, INIT_Z);
 	createStringRow(aligner.strings[1], vec3(-CUBE_SIZE, 0, 0), startPoint,vec3(0,0,0),0.0f);
 
@@ -197,7 +197,7 @@ void Visualizer::create3DScene() {
 	Aligner& aligner = *alignerptr;
 	Object3D topCube(BLUE_COLOR, scene->getCubeMesh(), engine.getShader());
 	topCube.setLocation(glm::vec3(INIT_X, INIT_Y, INIT_Z));
-	scene->addObject(&topCube);
+	scene->addObject(topCube);
 
 	vec3 startPoint(INIT_X - CUBE_SIZE, INIT_Y, INIT_Z);
 	createStringRow(aligner.strings[1], vec3(-CUBE_SIZE, 0, 0), startPoint,vec3(0,0,0),0.0f);

@@ -93,6 +93,9 @@
     <ClInclude Include="Drawable.h">
       <Filter>Header Files\Graphics</Filter>
     </ClInclude>
+    <ClInclude Include="PointerList.h">
+      <Filter>Header Files\Algorithm</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="mainTester.cpp">

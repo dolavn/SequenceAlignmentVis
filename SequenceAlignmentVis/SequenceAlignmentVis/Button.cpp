@@ -32,7 +32,7 @@ void Button::onKeyClick(int key) {
 
 void Button::draw(Shader* shader, glm::mat4 VP) {
 	if (objInd == -1) {
-		objInd = scn->addObject(text);
+		objInd = scn->addObject(*text);
 	}
 	Shader& s = shader != nullptr ? *shader : defaultShader;
 	glm::mat4 MVP = VP*modelMatrix;

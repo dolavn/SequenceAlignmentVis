@@ -10,23 +10,15 @@
 using namespace std;
 using namespace glm;
 
-Scene::Scene(Display& display):display(display){
+auto cloneFunc = [](DrawableObject& obj) {return obj.clone(); };
+
+Scene::Scene(Display& display) :display(display), objects(cloneFunc),textObjects(cloneFunc) {
 	cubeMesh = createCubeMesh();
 	arrowMesh = createArrowMesh();
 	initFontTexture();
 }
 
-Scene::Scene(const Scene& other) : display(other.display), shader(other.shader), pickingShader(other.pickingShader), textShader(other.textShader), cameraLocation(other.cameraLocation), cameraForward(other.cameraForward), cameraUp(other.cameraUp), projectionMatrix(other.projectionMatrix) {
-	for (unsigned int i = 0; i < other.objects.size(); ++i) {
-		DrawableObject* next = other.objects[i] == nullptr ? nullptr : other.objects[i]->clone();
-		objects.push_back(next);
-	}
-	for (unsigned int i = 0; i < other.textObjects.size(); ++i) {
-		DrawableObject* next = other.textObjects[i] == nullptr ? nullptr : other.textObjects[i]->clone();
-		textObjects.push_back(next);
-	}
-	freeIndicesObjects = other.freeIndicesObjects;
-	freeIndicesTextObjects = other.freeIndicesTextObjects;
+Scene::Scene(const Scene& other) : display(other.display), shader(other.shader), pickingShader(other.pickingShader), textShader(other.textShader), cameraLocation(other.cameraLocation), cameraForward(other.cameraForward), cameraUp(other.cameraUp), projectionMatrix(other.projectionMatrix),objects(other.objects),textObjects(other.textObjects){
 	cubeMesh = createCubeMesh();
 	arrowMesh = createArrowMesh();
 	initFontTexture();
@@ -139,21 +131,12 @@ void Scene::onClickBackground() {
 	selectedObj = nullptr;
 }
 
-int Scene::addObject(DrawableObject* object) {
-	DrawableObject* objectToAdd = object->clone();
-	objectToAdd->setScene(this);
-	bool text = &object->getDefaultShader() == textShader;
-	vector<int>& freeIndices = text ? freeIndicesTextObjects : freeIndicesObjects;
-	vector<DrawableObject*>& list = text ? textObjects : objects;
-	int ind = list.size();
-	if (freeIndices.size() > 0) {
-		ind = freeIndices.back();
-		freeIndices.pop_back();
-		list[ind] = objectToAdd;
-	}
-	else {
-		list.push_back(objectToAdd);
-	}
+int Scene::addObject(DrawableObject& object) {
+	object.setScene(this);
+	bool text = &object.getDefaultShader() == textShader;
+	pointerList<DrawableObject>& list = text ? textObjects : objects;
+	int ind = list.addNew(object);
+	DrawableObject* objectToAdd = list[ind];
 	objectToAdd->setId(!text ? (ind) : -1);
 	int ans = text ? -1 - ind : ind;
 	return ans;
@@ -171,19 +154,13 @@ void Scene::clearFontTexture() {
 }
 
 void Scene::removeDrawable(int ind) {
-	vector<DrawableObject*>& list = ind >= 0 ? objects : textObjects;
+	pointerList<DrawableObject>& list = ind >= 0 ? objects : textObjects;
 	int corrInd = ind >= 0 ? ind : -ind - 1;
-	vector<int>& freeIndices = ind >= 0 ? freeIndicesObjects : freeIndicesTextObjects;
-	if (corrInd >= (int)list.size()) { return; }
-	if (list[corrInd] != nullptr) {
-		delete(list[corrInd]);
-		list[corrInd] = nullptr;
-		freeIndices.push_back(corrInd);
-	}
+	list.removeElement(corrInd);
 }
 
 DrawableObject& Scene::getObject(int ind) {
-	vector<DrawableObject*>& list = ind >= 0 ? objects : textObjects;
+	pointerList<DrawableObject>& list = ind >= 0 ? objects : textObjects;
 	int corrInd = ind >= 0 ? ind : -ind - 1;
 	return *list[corrInd];
 }
@@ -293,18 +270,6 @@ void Scene::clear() {
 		delete(cubeMesh);
 		cubeMesh = nullptr;
 	}
-	for (unsigned int i = 0; i < objects.size(); ++i) {
-		if (objects[i] != nullptr) {
-			delete(objects[i]);
-			objects[i] = nullptr;
-		}
-	}
-	for (unsigned int i = 0; i < textObjects.size(); ++i) {
-		if (textObjects[i] != nullptr) {
-			delete(textObjects[i]);
-			textObjects[i] = nullptr;
-		}
-	}
 }
 
 VisualizationScene::~VisualizationScene() {
@@ -361,5 +326,5 @@ void Menu::addButton(float x, float y, float width, float height, string text, f
 
 void Menu::addButton(vec3 color,float x, float y, float width, float height, string text, function<void(Engine& engine)> action) {
 	Button button(color, x, y, width, height, text,cubeMesh,engine, action);
-	addObject(&button);
+	addObject(button);
 }

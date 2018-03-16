@@ -4,6 +4,7 @@
 /****************************************/
 
 #include <Windows.h>
+#include <glm/gtc/type_ptr.hpp>
 #include "Engine.h"
 #include "UserInterface.h"
 #include "MessageBox.h"
@@ -54,11 +55,19 @@ void Engine::run() {
 			glReadPixels(mouse.xPos, mouse.yPos, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, data);
 			int ind = getId(vec3(data[0], data[1], data[2]));
 			DrawableObject* selObj = currScene->getSelectedObj();
+			if (selObj != nullptr) {
+				float dist;
+				vec3 objLocation = selObj->getLocation();
+				vec3 cameraLocation = currScene->getCameraLocation();
+				vec3 distVec = objLocation - cameraLocation;
+				dist = glm::length(distVec);
+				distToObject = dist;
+			}
 			if (ind >= 0) {
-				if (selObj != nullptr && selObj->getId()!=ind) { 
-					printf("ind:%d\nselObj->getId():%d\n", ind, selObj->getId());
-					selObj->onRelease(); 
+				if (selObj != nullptr && selObj->getId() != ind) {
+					selObj->onRelease();
 				}
+				currScene->setSelectedObj(&currScene->getObject(ind));
 				currScene->getObject(ind).onClick();
 			}
 			else {
@@ -66,6 +75,7 @@ void Engine::run() {
 					selObj->onRelease();
 				}
 				currScene->onClickBackground();
+				currScene->setSelectedObj(nullptr);
 			}
 		}
 		d.Clear(1.0f, 1.0f, 1.0f, 1.0f);
@@ -93,7 +103,7 @@ void Engine::showAlert(string title, string text) {
 	if (currScene == nullptr) { return; }
 	UI::Messagebox m = createMessagebox(title, text, RED_COLOR);
 	m.setOnDismiss([](Engine& e) {e.canMoveCamera = true;  e.cont(); });
-	int ind = currScene->addObject(&m);
+	int ind = currScene->addObject(m);
 	currScene->setSelectedObj(&(currScene->getObject(ind)));
 	canMoveCamera = false;
 	halt();
@@ -103,7 +113,7 @@ void Engine::showNotification(string title, string text) {
 	if (currScene == nullptr) { return; }
 	UI::Messagebox m = createMessagebox(title, text, BLUE_COLOR);
 	m.setOnDismiss([](Engine& e) {e.canMoveCamera = true; });
-	int ind = currScene->addObject(&m);
+	int ind = currScene->addObject(m);
 	currScene->setSelectedObj(&(currScene->getObject(ind)));
 	canMoveCamera = false;
 }

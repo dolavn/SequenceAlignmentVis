@@ -44,11 +44,11 @@ namespace UI {
 
 	void Messagebox::draw(Shader* shader, mat4 VP) {
 		if (titleInd == -1) {
-			titleInd = scn->addObject(title);
+			titleInd = scn->addObject(*title);
 		}
 		for (unsigned int i = 0; i < text.size(); ++i) {
 			if (textInd[i] == -1) {
-				textInd[i] = scn->addObject(text[i]);
+				textInd[i] = scn->addObject(*text[i]);
 			}
 		}
 		Shader& s = shader != nullptr ? *shader : defaultShader;
@@ -67,12 +67,16 @@ namespace UI {
 	}
 
 	void Messagebox::onClick() {
-		scn->setSelectedObj(this);
 	}
 
 	void Messagebox::onRelease() {
 		onDismiss(e);
 		scn->removeDrawable(getId());
+	}
+
+	void Messagebox::onDrag(float dx, float dy) {
+		float dist = glm::distance(location, scn->getCameraLocation());
+		printf("(%f,%f)\ndist:%f\n", dx, dy,dist);
 	}
 
 	void Messagebox::onKeyClick(int key) {
@@ -91,7 +95,7 @@ namespace UI {
 		int numLetters = text.size();
 		int numLines = numLetters / LETTERS_PER_LINE;
 		if (numLetters%LETTERS_PER_LINE != 0) { numLines++; }
-		width = min(LETTERS_PER_LINE, (int)text.size())*textSize*(CHAR_SIZE_X / CHAR_SIZE_Y);
+		width = std::min(LETTERS_PER_LINE, (int)text.size())*textSize*(CHAR_SIZE_X / CHAR_SIZE_Y);
 		height = numLines *textSize+titleSize+getTitleOffset();
 	}
 

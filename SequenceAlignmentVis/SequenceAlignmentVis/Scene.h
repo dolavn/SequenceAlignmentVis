@@ -10,6 +10,7 @@
 #include "Display.h"
 #include "Mesh.h"
 #include "Drawable.h"
+#include "PointerList.h"
 #include "Text.h"
 #include <string>
 #include <vector>
@@ -39,7 +40,7 @@ public:
 	void drawScene();
 	void drawScenePicking();
 	void onClickBackground();
-	int addObject(DrawableObject* o);
+	int addObject(DrawableObject& o);
 	DrawableObject& getObject(int ind);
 	void removeDrawable(int ind);
 	DrawableObject* getSelectedObj() { return selectedObj; }
@@ -50,6 +51,7 @@ public:
 	Shader& getShader() { return *shader; }
 	Shader& getTextShader() { return *textShader; }
 
+	inline glm::mat4 getProjectionMatrix() { return projectionMatrix; }
 	inline glm::vec3 getCameraLocation() { return cameraLocation; }
 	inline glm::vec3 getCameraForward() { return cameraForward; }
 	inline glm::vec3 getCameraUp() { return cameraUp; }
@@ -71,11 +73,8 @@ protected:
 	Mesh* cubeMesh;
 	Mesh* arrowMesh;
 
-	std::vector<DrawableObject*> objects;
-	std::vector<DrawableObject*> textObjects;
-
-	std::vector<int> freeIndicesObjects;
-	std::vector<int> freeIndicesTextObjects;
+	pointerList<DrawableObject> objects;
+	pointerList<DrawableObject> textObjects;
 
 	glm::vec3 cameraLocation;
 	glm::vec3 cameraForward;

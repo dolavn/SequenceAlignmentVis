@@ -6,10 +6,33 @@
 #ifndef VISUALIZER_H_
 #define VISUALIZER_H_
 
+#include <vector>
+
 #include "Aligner.h"
 #include "Engine.h"
+#include "TableCell.h"
+
+struct TablePlane {
+public:
+	TablePlane(){}
+	void addCell(TableCell* cell) {
+		cells.push_back(cell);
+		cell->setTablePlane(this);
+	}
+	void move(glm::vec3 delta) {
+		for (unsigned int i = 0; i < cells.size(); ++i) {
+			TableCell* curr = cells[i];
+			glm::vec3 currLoc = curr->getLocation();
+			currLoc = currLoc + delta;
+			curr->setLocation(currLoc);
+		}
+	}
+private:
+	std::vector<TableCell*> cells;
+};
 
 class Scene;
+
 class Visualizer {
 public:
 	Visualizer(Aligner& aligner, Engine& e,int delay);

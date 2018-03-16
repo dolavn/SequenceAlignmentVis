@@ -28,6 +28,7 @@ public:
 	void draw(Shader* shader, glm::mat4 VP);
 	void setZOffset(float offset) { this->zOffset = offset; clear(); init(); }
 	void onClick(){}
+	void onDrag(float dx, float dy) {}
 	void onRelease(){}
 	void onKeyClick(int key){}
 	DrawableObject* clone();

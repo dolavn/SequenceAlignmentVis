@@ -27,7 +27,7 @@ namespace UI {
 		void onClick();
 		void onRelease();
 		void onKeyClick(int key);
-		
+		void onDrag(float dx, float dy);
 		void setOnDismiss(std::function<void(Engine&)> callback) { onDismiss = callback; }
 	protected:
 		virtual void updateModelMatrix();

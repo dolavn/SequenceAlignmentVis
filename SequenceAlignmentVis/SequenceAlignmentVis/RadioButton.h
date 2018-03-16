@@ -27,6 +27,7 @@ public:
 	DrawableObject* clone();
 	void onClick();
 	void onRelease();
+	void onDrag(float dx, float dy) {}
 	void onKeyClick(int key) {}
 	
 	friend struct RadioArray<T>;

@@ -40,12 +40,10 @@ DrawableObject* TextBox::clone() {
 
 void TextBox::onClick() {
 	setColor(LIGHT_GREY_COLOR);
-	scn->setSelectedObj(this);
 }
 
 void TextBox::onRelease() {
 	setColor(GREY_COLOR);
-	scn->setSelectedObj(nullptr);
 }
 
 void TextBox::onKeyClick(int key) {
@@ -63,7 +61,7 @@ void TextBox::onKeyClick(int key) {
 
 void TextBox::draw(Shader* shader, glm::mat4 VP) {
 	if (txtInd == -1) {
-		txtInd = scn->addObject(text);
+		txtInd = scn->addObject(*text);
 	}
 	Shader& s = shader != nullptr ? *shader : defaultShader;
 	glm::mat4 MVP = VP*modelMatrix;
@@ -79,9 +77,9 @@ void TextBox::draw(Shader* shader, glm::mat4 VP) {
 void TextBox::createText(string str) {
 	/*First estimation of the size of each char, used to calculate
 	the maximum width of the text area in the text box.*/
-	float size = min(2.0f, 2*width / (float(str.size()))); 
+	float size = std::min(2.0f, 2*width / (float(str.size()))); 
 	float maxWidth = 2 * (width - size*CHAR_SIZE_X / CHAR_SIZE_Y);
-	size = min(2.0f, maxWidth / (float(str.size()))); //Final size of each char
+	size = std::min(2.0f, maxWidth / (float(str.size()))); //Final size of each char
 	vec3 location = vec3(x + width / 2.0f-size*CHAR_SIZE_X/CHAR_SIZE_Y, y, Z_COORDINATE);
 	text = new Text(location, BLACK_COLOR, size , str, textShader);
 	text->setZOffset(Z_OFFSET);
