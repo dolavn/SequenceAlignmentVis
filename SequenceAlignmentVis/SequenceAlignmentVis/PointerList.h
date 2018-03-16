@@ -25,6 +25,9 @@ public:
 			return *this;
 		}
 	}
+	~pointerList() {
+		clear();
+	}
 	inline int size() { return activeElemNum; }
 	int addNew(T& newObj) {
 		T* objToAdd = cloneFunc(newObj);
@@ -49,7 +52,7 @@ public:
 	}
 	void removeElement(int ind) {
 		if (ind >= (int)list.size() || ind < 0 || list[ind] == nullptr) {
-			throw std::out_of_range("Index out of bounds!");
+			return;
 		}
 		clearElem(ind);
 		if (ind == (int)list.size() - 1) {

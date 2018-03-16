@@ -33,13 +33,13 @@ void Scene::drawScene() {
 	mtx.lock();
 	lockingThread = std::this_thread::get_id();
 	setupProjectionMatrix();
-	for (unsigned int i = 0; i < objects.size(); ++i) {
+	for (int i = 0; i < objects.size(); ++i) {
 		if (objects[i] != nullptr) {
 			objects[i]->draw(nullptr, projectionMatrix);
 		}
 	}
 	fontTexture->setTexture();
-	for (unsigned int i = 0; i < textObjects.size(); ++i) {
+	for (int i = 0; i < textObjects.size(); ++i) {
 		if (textObjects[i] != nullptr) {
 			textObjects[i]->draw(nullptr, projectionMatrix);
 		}
@@ -53,7 +53,7 @@ void Scene::drawScenePicking() {
 	mtx.lock();
 	lockingThread = std::this_thread::get_id();
 	setupProjectionMatrix();
-	for (unsigned int i = 0; i < objects.size(); ++i) {
+	for (int i = 0; i < objects.size(); ++i) {
 		if (objects[i] != nullptr) {
 			objects[i]->draw(pickingShader, projectionMatrix);
 		}
