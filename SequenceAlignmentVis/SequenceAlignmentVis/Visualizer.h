@@ -66,6 +66,7 @@ private:
 	IndexArray ind;
 	std::function<IndexArray(DPTable&)> maxFunc;
 	std::function<void(const IndexArray&, DPTable&)> stepFunc;
+	std::vector<TablePlane> planesVec;
 	Aligner* alignerptr;
 	Engine& engine;
 	FullDPTable* sceneTable;

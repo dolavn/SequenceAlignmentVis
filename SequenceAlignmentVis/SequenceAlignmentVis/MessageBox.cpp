@@ -76,13 +76,16 @@ namespace UI {
 
 	void Messagebox::onDrag(float dx, float dy) {
 		float dist = glm::distance(location, scn->getCameraLocation());
-		printf("(%f,%f)\ndist:%f\n", dx, dy,dist);
+		dy = dy / 65.0f;
+		dx = dx / 89.0f;
+		dx = dx*dist; dy = dy*dist;
+		move(dx, dy);
 	}
 
 	void Messagebox::onKeyClick(int key) {
 		float dx = 0.0f, dy = 0.0f;
-		if (key == GLFW_KEY_RIGHT) { dx = -MOVE_DIST; }
-		if (key == GLFW_KEY_LEFT) { dx = MOVE_DIST; }
+		if (key == GLFW_KEY_RIGHT) { dx = MOVE_DIST; }
+		if (key == GLFW_KEY_LEFT) { dx = -MOVE_DIST; }
 		if (key == GLFW_KEY_UP) { dy = MOVE_DIST; }
 		if (key == GLFW_KEY_DOWN) { dy = -MOVE_DIST; }
 		if (key == GLFW_KEY_A) {
@@ -144,16 +147,18 @@ namespace UI {
 
 	void Messagebox::move(float dx, float dy) {
 		float textSizeX = calcTextSizeX();
-		float x = location.x, y = location.y,z=location.z;
-		x = x + dx;
-		y = y + dy;
-		setLocation(vec3(x,y,z));
-		scn->getObject(titleInd).setLocation(vec3(x + width / 2 - textSizeX, y + height / 2 - getTitleOffset(),z));
+		vec3 up = scn->getCameraUp(); vec3 forward = scn->getCameraForward();
+		vec3 right = cross(forward,up);
+		vec3 delta = right*dx + up*dy;
+		vec3 loc = getLocation();
+		setLocation(location+delta);
+		vec3 titleLocation = scn->getObject(titleInd).getLocation();
+		scn->getObject(titleInd).setLocation(titleLocation+delta);
 		for (unsigned int i = 0; i < text.size(); ++i) {
-			vec2 textOffset = textLocations[i];
-			scn->getObject(textInd[i]).setLocation(vec3(x + textOffset.x, y + textOffset.y, z));
+			vec3 currTextLoc = scn->getObject(textInd[i]).getLocation();
+			scn->getObject(textInd[i]).setLocation(currTextLoc+delta);
 		}
-		location = vec3(x, y, location.z);
+		location = loc + delta;
 	}
 
 	void Messagebox::createMesh() {

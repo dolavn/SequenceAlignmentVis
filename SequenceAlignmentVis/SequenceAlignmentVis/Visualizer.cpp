@@ -28,12 +28,12 @@ const float INIT_Z = 5.0f;
 const float CUBE_SIZE = 2.1f;
 
 
-Visualizer::Visualizer(Aligner& aligner, Engine& e,int delay) :delay(delay),alignerptr(new Aligner(aligner)), engine(e){
+Visualizer::Visualizer(Aligner& aligner, Engine& e,int delay) :delay(delay),alignerptr(new Aligner(aligner)), engine(e),planesVec(){
 	vector<int> sizes = { (int)aligner.strings[0].size()+1,(int)aligner.strings[1].size()+1};
 	createScene();
 }
 
-Visualizer::Visualizer(const Visualizer& other) : delay(other.delay),alignerptr(other.alignerptr), engine(other.engine),stepFunc(other.stepFunc),maxFunc(other.maxFunc){
+Visualizer::Visualizer(const Visualizer& other) : delay(other.delay),alignerptr(other.alignerptr), engine(other.engine),stepFunc(other.stepFunc),maxFunc(other.maxFunc),planesVec(other.planesVec){
 	scene = other.scene;
 	if (other.scene != nullptr) {
 		scene = other.scene->clone();
@@ -139,9 +139,11 @@ bool Visualizer::createScene() {
 	scene->addObject(exit);
 	if (alignerptr->strings.size() < 2 || alignerptr->strings.size() > 3) { return false; }
 	if (alignerptr->strings.size() == 2) {
+		planesVec = vector<TablePlane>(1);
 		create2DScene();
 	}
 	if (alignerptr->strings.size() == 3) {
+		planesVec = vector<TablePlane>(alignerptr->strings[2].size()+1);
 		create3DScene();
 	}
 	return true;
@@ -167,11 +169,12 @@ void Visualizer::createTable(IndexArray ind, vec3 startPoint) {
 		throw std::invalid_argument("Index array should be 2 or 3 dimensional.");
 	}
 	for (; !ind.getOverflow(); ++ind) {
-		Object3D c(GRAY_COLOR, scene->getCubeMesh(), engine.getShader());
 		vec3 location = startPoint - CUBE_SIZE*vec3(ind[1], ind[0], dim == 2 ? 0.0f : -ind[2]);
 		TableCell cell(location, GRAY_COLOR, BLACK_COLOR, "", scene->getCubeMesh(), engine.getShader(), engine.getTextShader());
-		c.setLocation(location);
-		tableRef[ind] = (float)(scene->addObject(cell));
+		int objInd = scene->addObject(cell);
+		tableRef[ind] = (float)(objInd);
+		int p = dim == 2 ? 0 : ind[2];
+		planesVec[p].addCell(&static_cast<TableCell&>(scene->getObject(objInd)));
 	}
 }
 

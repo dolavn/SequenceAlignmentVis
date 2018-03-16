@@ -5,6 +5,7 @@
 
 #include "TableCell.h"
 #include "Scene.h"
+#include "Visualizer.h"
 #include "glm/ext.hpp"
 #include <iostream>
 
@@ -18,7 +19,7 @@ TableCell::TableCell(vec3 location, vec3 color, vec3 textColor, string str, Mesh
 	setLocation(location);
 }
 
-TableCell::TableCell(const TableCell& other) : DrawableObject(other), textShader(other.textShader),textColor(other.textColor),str(other.str),mesh(other.mesh),txtInd(other.txtInd){
+TableCell::TableCell(const TableCell& other) : DrawableObject(other), textShader(other.textShader),textColor(other.textColor),str(other.str),mesh(other.mesh),txtInd(other.txtInd),plane(other.plane){
 	text = other.text->clone();
 }
 
@@ -39,7 +40,15 @@ void TableCell::onRelease() {
 }
 
 void TableCell::onDrag(float dx, float dy) {
-
+	if (plane == nullptr) { return; }
+	vec3 up = scn->getCameraUp();
+	vec3 forward = scn->getCameraForward();
+	vec3 right = cross(forward, up);
+	dy = dy / 65.0f;
+	dx = dx / 89.0f;
+	vec3 delta = dx*right + dy*up;
+	float dist = distance(location, scn->getCameraLocation());
+	plane->move(dist*delta);
 }
 
 void TableCell::draw(Shader* shader, mat4 VP) {

@@ -5,7 +5,7 @@
 
 #include "Scene.h"
 
-inline int abs(int x) { return x >= 0 ? x : -x; }
+//inline int abs(int x) { return x >= 0 ? x : -x; }
 
 enum Movement { NO_MOVEMENT, UP, RIGHT, DOWN, LEFT };
 enum Button { LEFT_BUTTON, RIGHT_BUTTON, NO_BUTTON };
@@ -65,7 +65,8 @@ void mouseMoveCallBack(GLFWwindow* window, double xpos, double ypos) {
 	if (mouse.pressed == LEFT_BUTTON) {
 		if (inputScene->getSelectedObj() == nullptr) {
 			if (!*engineCanMoveCamera) { return; }
-			inputScene->rotateCamera(2*dx, 2*dy, glm::vec3(x,y,5));
+			glm::vec3 loc = inputScene->getCameraLocation() + 10.0f*inputScene->getCameraForward();
+			inputScene->rotateCamera(2*dx, 2*dy, loc);
 		}
 		else {
 			inputScene->getSelectedObj()->onDrag(dx, dy);
