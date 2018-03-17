@@ -42,10 +42,10 @@ public:
 	inline bool isFinished() { return finished; }
 
 	int getSceneInd() { return sceneInd; }
-	void addScene() { sceneInd = engine.addScene(scene); }
 	void globalAlignmentInit();
 	void freeEndsInit();
 	void localAlignmentInit();
+	void initScene();
 	void setPrevScene(int prevSceneInd) { this->prevSceneInd = prevSceneInd; }
 	void step();
 private:
@@ -53,6 +53,7 @@ private:
 	bool createScene();
 	inline void finish();
 	void init(std::function<IndexArray()> initFunc);
+	void reset();
 	void create2DScene();
 	void createStringRow(std::string str, glm::vec3 rowDirection, glm::vec3 startPoint,glm::vec3 rotateAxis,float rotateDeg);
 	void createTable(IndexArray ind, glm::vec3 startPoint);
@@ -64,6 +65,7 @@ private:
 	const int delay;
 	bool finished=false;
 	IndexArray ind;
+	std::function<IndexArray()> initFunc;
 	std::function<IndexArray(DPTable&)> maxFunc;
 	std::function<void(const IndexArray&, DPTable&)> stepFunc;
 	std::vector<TablePlane> planesVec;

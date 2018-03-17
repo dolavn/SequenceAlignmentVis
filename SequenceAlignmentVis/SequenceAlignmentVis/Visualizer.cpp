@@ -28,12 +28,12 @@ const float INIT_Z = 5.0f;
 const float CUBE_SIZE = 2.1f;
 
 
-Visualizer::Visualizer(Aligner& aligner, Engine& e,int delay) :delay(delay),alignerptr(new Aligner(aligner)), engine(e),planesVec(){
+Visualizer::Visualizer(Aligner& aligner, Engine& e,int delay) :delay(delay),alignerptr(new Aligner(aligner)), engine(e),planesVec(),sceneInd(-1),scene(nullptr){
 	vector<int> sizes = { (int)aligner.strings[0].size()+1,(int)aligner.strings[1].size()+1};
 	createScene();
 }
 
-Visualizer::Visualizer(const Visualizer& other) : delay(other.delay),alignerptr(other.alignerptr), engine(other.engine),stepFunc(other.stepFunc),maxFunc(other.maxFunc),planesVec(other.planesVec){
+Visualizer::Visualizer(const Visualizer& other) : delay(other.delay),alignerptr(other.alignerptr), engine(other.engine),stepFunc(other.stepFunc),maxFunc(other.maxFunc),planesVec(other.planesVec),ind(other.ind),sceneInd(other.sceneInd){
 	scene = other.scene;
 	if (other.scene != nullptr) {
 		scene = other.scene->clone();
@@ -46,23 +46,39 @@ Visualizer::~Visualizer() {
 
 void Visualizer::globalAlignmentInit() {
 	calcFunctions functions = alignerptr->getGlobalAlignmentFunc();
-	init(functions.initFunc);
+	initFunc = functions.initFunc;
 	maxFunc = functions.maxFunc;
 	stepFunc = functions.stepFunc;
 }
 
 void Visualizer::freeEndsInit() {
 	calcFunctions functions = alignerptr->getFreeEndsAlignmentFunc();
-	init(functions.initFunc);
+	initFunc = functions.initFunc;
 	maxFunc = functions.maxFunc;
 	stepFunc = functions.stepFunc;
 }
 
 void Visualizer::localAlignmentInit() {
 	calcFunctions functions = alignerptr->getLocalAlignmentFunc();
-	init(functions.initFunc);
+	initFunc = functions.initFunc;
 	maxFunc = functions.maxFunc;
 	stepFunc = functions.stepFunc;
+}
+
+void Visualizer::initScene() {
+	if (sceneInd != -1) {
+		reset();
+	}
+	else {
+		sceneInd = engine.addScene(scene);
+	}
+	init(initFunc);
+}
+
+void Visualizer::reset() {
+	createScene();
+	finished = false;
+	counter = 0;
 }
 
 void Visualizer::init(function<IndexArray()> initFunc) {
@@ -123,17 +139,20 @@ void Visualizer::step() {
 }
 
 bool Visualizer::createScene() {
-	VisualizationScene* visScene = new VisualizationScene(engine.getDisplay());
-	visScene->setVisualizer(this);
-	scene = visScene;
+	if (scene == nullptr) {
+		VisualizationScene* visScene = new VisualizationScene(engine.getDisplay());
+		visScene->setVisualizer(this);
+		scene = visScene;
+	}
+	else {
+		scene->clearScene();
+	}
 	auto func = [this](Engine& e) {
 		stop = !stop;
 	};
 	Button b(GREEN_COLOR, 2.0f, 8.0f, 2.0f, 1.0f, "Stop", scene->getCubeMesh(),engine, func);
 	Button exit(RED_COLOR, 8.0f, 8.0f, 2.0f, 1.0f, "Exit", scene->getCubeMesh(), engine, [this](Engine& e) {
 		e.changeScene(prevSceneInd);
-		scene = nullptr;
-		e.removeScene(sceneInd);
 	});
 	scene->addObject(b);
 	scene->addObject(exit);
@@ -218,8 +237,5 @@ void Visualizer::create3DScene() {
 }
 
 void Visualizer::clear() {
-	if (scene != nullptr) {
-		delete(scene);
-		scene = nullptr;
-	}
+
 }

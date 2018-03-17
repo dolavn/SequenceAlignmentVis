@@ -133,7 +133,7 @@ int setupMenu(Engine& e,Aligner& aligner) {
 			return;
 		}
 		vis->setPrevScene(menuInd);
-		vis->addScene();
+		vis->initScene();
 		e.addAdditionalFunction([vis]()->bool {
 			vis->step();
 			return !(vis->isFinished());

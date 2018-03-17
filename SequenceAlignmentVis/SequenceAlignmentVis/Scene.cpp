@@ -146,6 +146,11 @@ void Scene::initFontTexture() {
 	fontTexture = new Texture(TEXTURE_PATH);
 }
 
+void Scene::clearScene() {
+	objects.clear();
+	textObjects.clear();
+}
+
 void Scene::clearFontTexture() {
 	if (fontTexture != nullptr) {
 		delete(fontTexture);
@@ -269,6 +274,10 @@ void Scene::clear() {
 	if (cubeMesh != nullptr) {
 		delete(cubeMesh);
 		cubeMesh = nullptr;
+	}
+	if (arrowMesh != nullptr) {
+		delete(arrowMesh);
+		arrowMesh = nullptr;
 	}
 }
 

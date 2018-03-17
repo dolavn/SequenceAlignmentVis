@@ -26,9 +26,9 @@ public:
 		}
 	}
 	~pointerList() {
-		clear();
+		freeMemory();
 	}
-	inline int size() { return activeElemNum; }
+	inline int size() { return list.size(); }
 	int addNew(T& newObj) {
 		T* objToAdd = cloneFunc(newObj);
 		int ans;
@@ -45,7 +45,7 @@ public:
 		return ans;
 	}
 	inline T* operator[](int ind) {
-		if (ind >= (int)list.size() || ind < 0 || list[ind] == nullptr) {
+		if (ind >= (int)list.size() || ind < 0) {
 			throw std::out_of_range("Index out of bounds!");
 		}
 		return list[ind];
@@ -63,6 +63,12 @@ public:
 		}
 		--activeElemNum;
 	}
+	void clear() {
+		freeMemory();
+		list.clear();
+		freeIndices = std::queue<int>();
+		activeElemNum = 0;
+	}
 private:
 	void copyList(const pointerList& other) {
 		freeIndices = other.freeIndices;
@@ -76,7 +82,7 @@ private:
 		delete(list[ind]);
 		list[ind] = nullptr;
 	}
-	void clear() {
+	void freeMemory() {
 		for (unsigned int i = 0; i < list.size(); ++i) {
 			clearElem(i);
 		}

@@ -37,6 +37,7 @@ public:
 	void setShaders(Shader* shader, Shader* pickingShader, Shader* textShader) {
 		this->shader = shader; this->pickingShader = pickingShader; this->textShader = textShader;
 	}
+	void clearScene();
 	void drawScene();
 	void drawScenePicking();
 	void onClickBackground();

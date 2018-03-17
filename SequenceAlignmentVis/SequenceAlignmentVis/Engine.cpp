@@ -141,7 +141,6 @@ void Engine::changeScene(int sceneInd) {
 	if (drawingThread != std::this_thread::get_id()) {
 		mtx.lock();
 	}
-	//clearScene();
 	Scene* newScene = scenesList[sceneInd];
 	newScene->setShaders(shader, pickingShader, textShader);
 	shader->setLightDirection(newScene->getCameraForward());
