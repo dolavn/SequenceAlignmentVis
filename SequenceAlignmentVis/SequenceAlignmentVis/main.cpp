@@ -25,10 +25,11 @@ using namespace std;
 using namespace glm;
 
 int setupMenu(Engine& e,Aligner& aligner);
-SettingsScene<Visualizer*>* setupSettings(Engine& e,Aligner& aligner, int menuInd);
+SettingsScene<shared_ptr<Visualizer>>* setupSettings(Engine& e,Aligner& aligner, int menuInd);
 bool isInteger(string str);
 
 int main(int argc, char** argv) {
+	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 	vector<char> alphabet = { 'A','B','C' };
 	Engine e(1024,768,"Visualization");
 	Aligner aligner(alphabet, 5.0f, -3.0f, -2.0f);
@@ -37,8 +38,8 @@ int main(int argc, char** argv) {
 	e.run();
 }
 
-SettingsScene<Visualizer*>* setupSettings(Engine& e, Aligner& aligner, int menuInd) {
-	SettingsScene<Visualizer*>* settings = new SettingsScene<Visualizer*>(e.getDisplay(), e);
+SettingsScene<shared_ptr<Visualizer>>* setupSettings(Engine& e, Aligner& aligner, int menuInd) {
+	SettingsScene<shared_ptr<Visualizer>>* settings = new SettingsScene<shared_ptr<Visualizer>>(e.getDisplay(), e);
 	TextBox t1(0, 7.5f, 15, 1.5f, e, settings);
 	TextBox t2(0, 5.5f, 15, 1.5f, e, settings);
 	TextBox t3(0, 3.5f, 15, 1.5f, e, settings);
@@ -48,17 +49,22 @@ SettingsScene<Visualizer*>* setupSettings(Engine& e, Aligner& aligner, int menuI
 	int t2Ind = settings->addObject(t2);
 	int t3Ind = settings->addObject(t3);
 	int speedInd = settings->addObject(speed);
-	RadioButton<AlignmentType> global(7.0f, 0.5f, "Global", e.getTextShader(), GLOBAL_ALIGNMENT);
+	/*RadioButton<AlignmentType> global(7.0f, 0.5f, "Global", e.getTextShader(), GLOBAL_ALIGNMENT);
 	RadioButton<AlignmentType> freeEnds(7.0f, -1.0f, "Free ends", e.getTextShader(), FREE_ENDS);
 	RadioButton<AlignmentType> local(7.0f, -2.5f, "Local", e.getTextShader(), LOCAL_ALIGNMENT);
 	int ind1 = settings->addObject(global);
 	int ind2 = settings->addObject(freeEnds);
 	int ind3 = settings->addObject(local);
-	shared_ptr<RadioArray<AlignmentType>> arr = make_shared<RadioArray<AlignmentType>>();
-	arr->setPtr(arr);
-	arr->addRadioButton(&(static_cast<RadioButton<AlignmentType>&>(settings->getObject(ind1))));
+	*/
+	RadioArray<AlignmentType>* arr = new RadioArray<AlignmentType>(e.getTextShader());
+	settings->addRadioArray(arr);
+	arr->addRadioButton(7.0f, 0.5f, "Global", GLOBAL_ALIGNMENT, *settings);
+	arr->addRadioButton(7.0f, -1.0f, "Free ends", FREE_ENDS, *settings);
+	arr->addRadioButton(7.0f, -2.5f, "Local", LOCAL_ALIGNMENT, *settings);
+	/*arr->addRadioButton(&(static_cast<RadioButton<AlignmentType>&>(settings->getObject(ind1))));
 	arr->addRadioButton(&(static_cast<RadioButton<AlignmentType>&>(settings->getObject(ind2))));
 	arr->addRadioButton(&(static_cast<RadioButton<AlignmentType>&>(settings->getObject(ind3))));
+	*/
 	settings->addButton(vec3(0, 0.5, 1), 1, -6, 5, 1, "Return", [menuInd, settings, t1Ind, t2Ind, t3Ind, speedInd, arr, &aligner](Engine& e) {
 		TextBox& t1Ref = static_cast<TextBox&>(settings->getObject(t1Ind));
 		TextBox& t2Ref = static_cast<TextBox&>(settings->getObject(t2Ind));
@@ -98,7 +104,7 @@ SettingsScene<Visualizer*>* setupSettings(Engine& e, Aligner& aligner, int menuI
 		}
 		int speed = stoi(speedRef.getText());
 		if (aligner.getStringsNum() > 1) {
-			Visualizer* vis = aligner.createVisualizer(e, speed);
+			shared_ptr<Visualizer> vis = aligner.createVisualizer(e, speed);
 			switch (arr->getSelected()) {
 			case GLOBAL_ALIGNMENT:
 				vis->globalAlignmentInit(); break;
@@ -120,14 +126,15 @@ int setupMenu(Engine& e,Aligner& aligner) {
 	Menu* menu = new Menu(e.getDisplay(), e);
 	int menuInd = e.addScene(menu);
 	Menu& menuRef = static_cast<Menu&>(e.getScene(menuInd));
-	SettingsScene<Visualizer*>* settings = setupSettings(e, aligner, menuInd);
+	SettingsScene<shared_ptr<Visualizer>>* settings = setupSettings(e, aligner, menuInd);
 	int settingsInd = e.addScene(settings);
 	auto start = [&aligner,settings, menuInd](Engine & e) {
 		if (aligner.getStringsNum() <2) {
 			e.showAlert("Error", "You should add at least two strings before running the visualizer.");
 			return;
 		}
-		Visualizer* vis = settings->getHeldObject();
+		shared_ptr<Visualizer> vis = settings->getHeldObject();
+		printf("vis count:%d\n", vis.use_count());
 		if (vis == nullptr) {
 			e.showAlert("Error", "Unexpected error");
 			return;

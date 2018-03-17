@@ -2,7 +2,6 @@
 /* Texture.cpp                          */
 /* Copyright (c) Dolav Nitay            */
 /****************************************/
-
 #include "Texture.h"
 #include "stb_image.h"
 #include <iostream>
@@ -12,8 +11,20 @@ Texture::Texture(std::string path) :path(path) {
 	loadTexture(path);
 }
 
+Texture::~Texture() {
+	clearTexture();
+}
+
 void Texture::resetTexture() {
 	glDeleteTextures(1, &textureID);
+}
+
+void Texture::clearTexture() {
+	resetTexture();
+	if (data != nullptr) {
+		delete(data);
+		data = nullptr;
+	}
 }
 
 void Texture::setTexture() {

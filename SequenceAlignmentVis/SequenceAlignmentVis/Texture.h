@@ -13,6 +13,7 @@
 class Texture {
 public:
 	Texture(std::string);
+	~Texture();
 	void setTexture();
 	void resetTexture();
 private:
@@ -22,6 +23,7 @@ private:
 	int height;
 	int numComponents = 4;
 	void loadTexture(std::string path);
+	void clearTexture();
 	unsigned char* data;
 };
 

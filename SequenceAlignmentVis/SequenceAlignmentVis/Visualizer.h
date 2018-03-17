@@ -7,7 +7,7 @@
 #define VISUALIZER_H_
 
 #include <vector>
-
+#include <memory>
 #include "Aligner.h"
 #include "Engine.h"
 #include "TableCell.h"
@@ -33,7 +33,7 @@ private:
 
 class Scene;
 
-class Visualizer {
+class Visualizer{
 public:
 	Visualizer(Aligner& aligner, Engine& e,int delay);
 	Visualizer(const Visualizer& other);

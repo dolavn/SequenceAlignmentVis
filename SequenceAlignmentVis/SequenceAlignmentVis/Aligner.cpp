@@ -254,8 +254,8 @@ void Aligner::alignStrings(vector<string> strings) {
 	findGlobalAlignment();
 }
 
-Visualizer* Aligner::createVisualizer(Engine& e,int delay) {
-	Visualizer* ans = new Visualizer(*this, e,delay);
+shared_ptr<Visualizer> Aligner::createVisualizer(Engine& e,int delay) {
+	shared_ptr<Visualizer> ans = make_shared<Visualizer>(*this, e,delay);
 	return ans;
 }
 

@@ -18,14 +18,14 @@ const string SELECTED_PATH = "./res/textures/radiochecked.png";
 const vec3 BLACK_COLOR = vec3(0, 0, 0);
 
 template <class T>
-RadioButton<T>::RadioButton(float x, float y, string str,Shader& shader,T value) :DrawableObject(shader, BLACK_COLOR), x(x), y(y),txtInd(-1),value(value) {
+RadioButton<T>::RadioButton(float x, float y, string str,Shader& shader,T value,RadioArray<T>& arr) :DrawableObject(shader, BLACK_COLOR), x(x), y(y),txtInd(-1),value(value),arr(arr){
 	createMesh();
 	createText(str);
 	setupTextures();
 }
 
 template <class T>
-RadioButton<T>::RadioButton(const RadioButton<T>& other) : DrawableObject(other), x(other.x), y(other.y), text(static_cast<Text*>(other.text->clone())),txtInd(-1),value(other.value) {
+RadioButton<T>::RadioButton(const RadioButton<T>& other) : DrawableObject(other), x(other.x), y(other.y), text(static_cast<Text*>(other.text->clone())),txtInd(-1),value(other.value),arr(other.arr){
 	createMesh();
 	setupTextures();
 }
@@ -63,9 +63,7 @@ DrawableObject* RadioButton<T>::clone() {
 
 template <class T>
 void RadioButton<T>::onClick() {
-	if (currArray != nullptr) {
-		currArray->select(ind);
-	}
+	arr.select(ind);
 }
 
 template <class T>
@@ -150,6 +148,8 @@ Declaring a RadioButton class of desired templates to prevent linking
 problems.
 */
 void tempFunction() {
-	RadioButton<int> radio(5, 2, "test", Shader("./res/defaultShader"), 5);
-	RadioButton<AlignmentType> radio2(5, 2, "test", Shader("./res/defaultShader"), GLOBAL_ALIGNMENT);
+	RadioArray<int> radioArr(Shader("./res/defaultShader"));
+	RadioButton<int> radio(5, 2, "test", Shader("./res/defaultShader"), 5, radioArr);
+	RadioArray<AlignmentType> radioArr2(Shader("./res/defaultShader"));
+	RadioButton<AlignmentType> radio2(5, 2, "test", Shader("./res/defaultShader"), GLOBAL_ALIGNMENT,radioArr2);
 }

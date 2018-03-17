@@ -29,6 +29,7 @@ const float CUBE_SIZE = 2.1f;
 
 
 Visualizer::Visualizer(Aligner& aligner, Engine& e,int delay) :delay(delay),alignerptr(new Aligner(aligner)), engine(e),planesVec(),sceneInd(-1),scene(nullptr){
+	printf("Visualizer created\n");
 	vector<int> sizes = { (int)aligner.strings[0].size()+1,(int)aligner.strings[1].size()+1};
 	createScene();
 }
@@ -41,6 +42,7 @@ Visualizer::Visualizer(const Visualizer& other) : delay(other.delay),alignerptr(
 }
 
 Visualizer::~Visualizer() {
+	printf("Visualizer cleared\n");
 	clear();
 }
 
@@ -141,7 +143,6 @@ void Visualizer::step() {
 bool Visualizer::createScene() {
 	if (scene == nullptr) {
 		VisualizationScene* visScene = new VisualizationScene(engine.getDisplay());
-		visScene->setVisualizer(this);
 		scene = visScene;
 	}
 	else {
@@ -237,5 +238,5 @@ void Visualizer::create3DScene() {
 }
 
 void Visualizer::clear() {
-
+	printf("clear vis\n");
 }

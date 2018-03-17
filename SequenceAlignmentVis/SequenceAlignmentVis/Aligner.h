@@ -10,6 +10,7 @@
 #include <functional>
 #include <string>
 #include <map>
+#include <memory>
 #include "DPTable.h"
 
 
@@ -153,7 +154,7 @@ public:
 	void findGlobalAlignment();
 	void findFreeEndsAlignment();
 	void alignStrings(std::vector<std::string> strings);
-	Visualizer* createVisualizer(Engine& e,int delay);
+	std::shared_ptr<Visualizer> createVisualizer(Engine& e,int delay);
 
 	std::vector<std::string> getAlignment() { return alignment; }
 

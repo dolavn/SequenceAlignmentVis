@@ -279,12 +279,15 @@ void Scene::clear() {
 		delete(arrowMesh);
 		arrowMesh = nullptr;
 	}
+	if (fontTexture != nullptr) {
+		delete(fontTexture);
+		fontTexture = nullptr;
+	}
+	clearScene();
 }
 
 VisualizationScene::~VisualizationScene() {
-	if (vis != nullptr) {
-		delete(vis);
-	}
+
 }
 
 void VisualizationScene::rotateCamera(float dx, float dy,glm::vec3 target) {

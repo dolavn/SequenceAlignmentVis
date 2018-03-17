@@ -20,7 +20,7 @@ enum AlignmentType { GLOBAL_ALIGNMENT, FREE_ENDS, LOCAL_ALIGNMENT};
 template <class T>
 class RadioButton :public DrawableObject {
 public:
-	RadioButton(float x, float y, std::string str, Shader& shader, T value);
+	RadioButton(float x, float y, std::string str, Shader& shader, T value,RadioArray<T> &arr);
 	RadioButton(const RadioButton& other);
 	virtual ~RadioButton();
 	void draw(Shader* shader, glm::mat4 vp);
@@ -48,33 +48,38 @@ private:
 	Texture** activeTexture = &unselectedTexture;
 	Texture* selectedTexture;
 	Texture* unselectedTexture;
-	std::shared_ptr<RadioArray<T>> currArray = std::shared_ptr<RadioArray<T>>(nullptr);
+	RadioArray<T>& arr;
 	int txtInd;
 	float x, y;
 	int ind;
 	bool selected;
 };
 
-template <class T>
-struct RadioArray {
+struct RadioArrayGeneric {
 public:
-	RadioArray<T>(){}
-	void addRadioButton(RadioButton<T>* button) {
-		buttons.push_back(button);
-		button->currArray = thisPtr;
-		button->ind = buttons.size() - 1;
+	virtual ~RadioArrayGeneric(){}
+};
+
+template <class T>
+struct RadioArray: public RadioArrayGeneric{
+public:
+	RadioArray<T>(Shader& shader) : shader(shader) {  }
+	RadioArray<T>(const RadioArray<T>& other):shader(other.shader) { }
+	virtual ~RadioArray<T>() { }
+	void addRadioButton(float x, float y, std::string str, T value,Scene& scn) {
+		RadioButton<T> b(x, y, str, shader,value,*this);
+		int ind = scn.addObject(b);
+		RadioButton<T>* buttonPtr = &static_cast<RadioButton<T>&>(scn.getObject(ind));
+		buttons.push_back(buttonPtr);
+		buttonPtr->ind = buttons.size() - 1;
 		if (selected == -1) {
-			select(button->ind);
+			select(buttonPtr->ind);
 		}
 	}
 	void select(int ind) {
 		deselectAll();
 		buttons[ind]->select();
 		selected = ind;
-	}
-
-	void setPtr(std::shared_ptr<RadioArray<T>> ptr) {
-		thisPtr = ptr;
 	}
 
 	T getSelected() {
@@ -88,7 +93,7 @@ private:
 		}
 		selected = -1;
 	}
-	std::shared_ptr<RadioArray<T>> thisPtr = std::shared_ptr<RadioArray<T>>(nullptr);
+	Shader& shader;
 	std::vector<RadioButton<T>*> buttons;
 
 };

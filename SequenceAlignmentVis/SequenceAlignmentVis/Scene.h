@@ -12,6 +12,7 @@
 #include "Drawable.h"
 #include "PointerList.h"
 #include "Text.h"
+#include "RadioButton.h"
 #include <string>
 #include <vector>
 #include <mutex>
@@ -97,7 +98,6 @@ public:
 	}
 	virtual ~VisualizationScene();
 
-	void setVisualizer(Visualizer* vis) {this->vis = vis;}
 	void rotateCamera(float dx, float dy,glm::vec3 location);
 	void zoomCamera(float z);
 	void moveCamera(float dx, float dy);
@@ -107,7 +107,6 @@ public:
 		return new VisualizationScene(*this);
 	}
 private:
-	Visualizer* vis;
 	glm::vec3 cameraRight;
 };
 
@@ -121,7 +120,7 @@ public:
 	Menu(const Menu& other):Scene(other),engine(other.engine){
 
 	}
-	virtual ~Menu(){}
+	virtual ~Menu() { }
 
 	void addButton(float x, float y, float width, float height, std::string text, std::function<void(Engine& engine)> action);
 	void addButton(glm::vec3 color,float x, float y, float width, float height, std::string text, std::function<void(Engine& engine)> action);
@@ -142,13 +141,23 @@ class SettingsScene :public Menu {
 public:
 	SettingsScene(Display& display,Engine& engine):Menu(display,engine){}
 	SettingsScene(const SettingsScene& other):Menu(other){}
-
+	virtual ~SettingsScene() {  
+		for (unsigned int i = 0; i < radioArrays.size(); ++i) {
+			if (radioArrays[i] != nullptr) {
+				delete(radioArrays[i]);
+				radioArrays[i] = nullptr;
+			}
+		}
+	}
 	void setHeldObject(T obj) { heldObject = obj; }
 	T getHeldObject() { return heldObject; }
+
+	void addRadioArray(RadioArrayGeneric* arr) { radioArrays.push_back(arr); }
 
 	Scene* clone() { return new SettingsScene(*this); }
 private:
 	T heldObject;
+	std::vector<RadioArrayGeneric*> radioArrays;
 };
 
 #endif
